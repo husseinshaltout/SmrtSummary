@@ -36,20 +36,23 @@ class SmrtSummary:
             # print(filename)
             im = cv.imread(filename,cv.IMREAD_COLOR)
             rows = im.shape[0]        
-            cropped = im[0:rows, 1000:1100]             
+            cropped = im[0:rows, 1000]             
             cv.imwrite(os.path.join(self.path1 , filename.split("\\")[-1]), cropped)
         
-        for filename in range(len(k)):
-            img = cv.imread(filename)
-            height, width, layers = img.shape
-            size = (width,height)
-            img_array.append(img)
-        print(img_array)
-        out = cv.VideoWriter('project.avi',cv.VideoWriter_fourcc(*'DIVX'), 30, size)
-        for i in range(len(img_array)):
-            out.write(img_array[i])
-        out.release()
-        # cv.imwrite("thumbnail.png", numpy_horizontal)
+        for x in range(len(k)):
+            if(x == 0):
+                numpy_horizontal = cv.imread("C:\\Users\\Dell\\Documents\\GitHub\\SmrtSummary\\frames\\cropped\\frame{0}.jpg".format(x))
+            else:
+                img = cv.imread("C:\\Users\\Dell\\Documents\\GitHub\\SmrtSummary\\frames\\cropped\\frame{0}.jpg".format(x))
+                numpy_horizontal = np.hstack((numpy_horizontal, img))
+        #     height, width, layers = img.shape
+        #     size = (width,height)
+        #     img_array.append(img)
+        # out = cv.VideoWriter('project.avi',cv.VideoWriter_fourcc(*'DIVX'), 30, size)
+        # for i in range(len(img_array)):
+        #     out.write(img_array[i])
+        # out.release()
+        cv.imwrite("thumbnail.png", numpy_horizontal)
         # return im
         
     def show_wait_destroy(self, winname, img):
