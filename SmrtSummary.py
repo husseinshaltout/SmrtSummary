@@ -36,7 +36,7 @@ class SmrtSummary:
             # print(filename)
             im = cv.imread(filename,cv.IMREAD_COLOR)
             rows = im.shape[0]        
-            cropped = im[0:rows, 1000]             
+            cropped = im[0:rows, 1069:1070]             
             cv.imwrite(os.path.join(self.path1 , filename.split("\\")[-1]), cropped)
         
         for x in range(len(k)):
