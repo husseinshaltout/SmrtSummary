@@ -13,7 +13,7 @@ class SmrtSummary:
     def __init__(self):
         self.cap= cv.VideoCapture('test.mp4')
         self.path = 'C:/Users/Dell/Documents/GitHub/SmrtSummary/frames'
-        self.path1 = 'C:/Users/Dell/Documents/GitHub/SmrtSummary/cropped'
+        self.path1 = 'C:/Users/Dell/Documents/GitHub/SmrtSummary/frames/cropped'
     def split(self):
         i=0
         while(self.cap.isOpened()):
@@ -30,18 +30,27 @@ class SmrtSummary:
         # im = cv.imread("frames/frame0.jpg",cv.IMREAD_COLOR)        
         # rows = im.shape[0]        
         # cropped = im[0:rows, 1000:1100]
+        k = glob.glob('C:\\Users\\Dell\\Documents\\GitHub\\SmrtSummary\\frames\\*.jpg')
         
-        for filename in glob.glob('C:/Users/Dell/Documents/GitHub/SmrtSummary/frames/*.jpg'):
+        for filename in glob.glob('C:\\Users\\Dell\\Documents\\GitHub\\SmrtSummary\\frames\\*.jpg'):
+            # print(filename)
             im = cv.imread(filename,cv.IMREAD_COLOR)
             rows = im.shape[0]        
-            cropped = im[0:rows, 1000:1100]           
-            cv.imwrite(os.path.join(self.path1 , 'C_'+filename), cropped)
-           
-        # numpy_horizontal = np.hstack((cropped, c2))
+            cropped = im[0:rows, 1000:1100]             
+            cv.imwrite(os.path.join(self.path1 , filename.split("\\")[-1]), cropped)
         
+        for filename in range(len(k)):
+            img = cv.imread(filename)
+            height, width, layers = img.shape
+            size = (width,height)
+            img_array.append(img)
+        print(img_array)
+        out = cv.VideoWriter('project.avi',cv.VideoWriter_fourcc(*'DIVX'), 30, size)
+        for i in range(len(img_array)):
+            out.write(img_array[i])
+        out.release()
         # cv.imwrite("thumbnail.png", numpy_horizontal)
-        print(im.shape)
-        return im
+        # return im
         
     def show_wait_destroy(self, winname, img):
         cv.imshow(winname, img)
