@@ -4,6 +4,7 @@ Created on Sat Mar 14 06:32:54 2020
 
 @author: Dell
 """
+import SmrtSummary
 import glob
 import sys
 import os
@@ -49,9 +50,9 @@ class Toplevel1:
         #double click on item in listbox to show item on small canvas        
         self.Scrolledlistbox1.bind("<Double-Button-1>", self.showimg)
         #loop to show files in listbox    
-        self.path = 'frames'
-        self.fpath = glob.glob('%s\\*.jpg'%self.path)
-        for x in range(len(self.fpath)):
+        # self.path = 'frames'
+        # self.fpath = glob.glob('%s\\*.jpg'%self.path)
+        for x in range(len(fpath)):
             self.Scrolledlistbox1.insert(tk.END, "frame{0}.jpg".format(x))
 
 
