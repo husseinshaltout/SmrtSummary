@@ -3,19 +3,36 @@ import glob
 
 
 from PIL import Image, ImageTk
+import tkinter.filedialog
 try:
     import Tkinter as tk
 except ImportError:
     import tkinter as tk
-
 def vp_start_gui():
     '''Starting point when module is the main routine.'''
     root = tk.Tk()
     top = Toplevel1 (root)
     root.mainloop()
 
-
+def new_window(Win_class):
+    global win2
+    try:
+        if win2.state() == "normal": win2.focus()
+    except NameError as e:
+        print(e)
+        win2 = tk.Toplevel(win)
+        Win_class(win2)
+ 
+class Win2:
+    def __init__(self, root):
+        self.root = root
+        self.root.geometry("300x300+500+200")
+        self.root["bg"] = "navy"
+        self.w = tk.Scale(root, from_=0, to=200, orient=tk.HORIZONTAL)
+        self.w.pack()
+        
 class Toplevel1:
+    Win2c = Win2()
     #SmrtSummary object                  
     ss = SmrtSummary()   
     def __init__(self, top=None):
@@ -31,11 +48,6 @@ class Toplevel1:
         #Canvas showing summary image           
         self.canvas = tk.Canvas(top)
         self.canvas.place(relx=0.028, rely=0.022, relwidth=0.5, relheight=0.878)    
-        # self.img = Image.open("summary.png")
-        # self.img = self.img.resize((157, 1080), Image.ANTIALIAS)
-        # self.img = ImageTk.PhotoImage(self.img)  
-        # self.canvas.create_image(10,10, image=self.img)  
-        # self.canvas.image = self.img   
 
         #Listbox showing all frames
         self.Scrolledlistbox1 = tk.Listbox(top)       
@@ -48,24 +60,27 @@ class Toplevel1:
         #loop to show files in listbox    
         self.path = 'frames'
         self.fpath = glob.glob('%s\\*.jpg'%self.path)
-
-
         #Small canvas to show frames
         self.S_canvas = tk.Canvas(top)
-        self.S_canvas.place(relx=0.720, rely=0.022, relheight=0.250, relwidth=0.250)
+        self.S_canvas.place(relx=0.720, rely=0.022, relheight=0.250, relwidth=0.250)        
+        #Load video
+        self.Button_load = tk.Button(top,command=self.fileDialog)
+        self.Button_load.place(relx=0.803, rely=0.3, height=24, width=85)
+        self.Button_load.configure(text='''Load video''')
+        
+        self.label1 = tk.Label(top, text = "")
+        self.label1.place(relx=0.720, rely=0.36, height=12, relwidth=0.250)
         #Split Video button
         self.Button2 = tk.Button(top,command=self.fun1)
-        self.Button2.place(relx=0.803, rely=0.3, height=24, width=85)
-        self.Button2.configure(text='''Split video''')
-        
-        #Scanline Crop
-        self.Button_scan = tk.Button(top,command=lambda:self.ss.scanline)
-        self.Button_scan.place(relx=0.803, rely=0.4, height=24, width=85)
-        self.Button_scan.configure(text='''Scanline crop''')
-        
+        self.Button2.place(relx=0.803, rely=0.4, height=24, width=85)
+        self.Button2.configure(text='''Split video''')        
+        #Select scanline Button
+        self.Button_scan = tk.Button(top,command=lambda: new_window(self.Win2c))
+        self.Button_scan.place(relx=0.803, rely=0.5, height=24, width=85)
+        self.Button_scan.configure(text='''Select scanline''')
         #Get Summary Button
         self.Button1 = tk.Button(top,command=self.fun2)
-        self.Button1.place(relx=0.803, rely=0.5, height=24, width=85)
+        self.Button1.place(relx=0.803, rely=0.6, height=24, width=85)
         self.Button1.configure(text='''Get summary''')
     #view frame in canvas
     def C2_showimg(self,z):
@@ -90,7 +105,9 @@ class Toplevel1:
             self.Scrolledlistbox1.insert(tk.END, "frame{0}.jpg".format(x))
             
     def fun1(self):
-        self.ss.split()
+        l = self.label1['text']
+        print(l)
+        self.ss.split(l)
         print("aaaaa")
         self.fList()
 
@@ -102,14 +119,11 @@ class Toplevel1:
         self.C1_showimg()
         
         
-def fileDialog(self):
- 
-    self.filename = filedialog.askopenfilename(initialdir =  "/", title = "Select A File", filetype =
-    (("jpeg files","*.jpg"),("all files","*.*")) )
-    self.label = ttk.Label(self.labelFrame, text = "")
-    self.label.grid(column = 1, row = 2)
-    self.label.configure(text = self.filename)  
-      
+    def fileDialog(self):     
+        self.filename = tk.filedialog.askopenfilename(initialdir = "/",title = "Select file",filetypes = (("mp4 files","*.mp4"),("all files","*.*")))
+        print(self.filename)
+        self.label1.configure(text = self.filename)
+        return self.filename
 if __name__ == '__main__':
     vp_start_gui()
 
