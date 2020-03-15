@@ -1,6 +1,6 @@
 from SmrtSummary import SmrtSummary
 import glob
-
+import cv2 as cv
 
 from PIL import Image, ImageTk
 import tkinter.filedialog
@@ -15,13 +15,37 @@ def vp_start_gui():
     root.mainloop()
 
 def new_window():
+    global var,rx,ry,row,cols,canvas
+    rx = 6.4#Image size on x or width / image resize
+    ry = 3.6#Image size on y or hieght / image resize
+    var = tk.IntVar()
     root = tk.Toplevel()
     root.geometry("300x300+500+200")
     root.title("Scanline")
     root["bg"] = "navy"
-    slider = tk.Scale(root, from_=0, to=200, orient=tk.HORIZONTAL)
-    slider.pack()
-        
+    canvas = tk.Canvas(root)
+    canvas.place(width=300, height=300)
+    img = Image.open("frames/frame0.jpg")
+    img = img.resize((300, 300), Image.ANTIALIAS)
+    img = ImageTk.PhotoImage(img)  
+    canvas.create_image(0,0, image=img, anchor="nw")  
+    canvas.image = img  
+    
+    im = cv.imread("frames/frame0.jpg",cv.IMREAD_COLOR)
+    cols = im.shape[1]  
+    row = im.shape[0]  
+    slider = tk.Scale(root, from_=0, to=cols,variable = var,  orient=tk.HORIZONTAL)
+    slider.pack(side = tk.BOTTOM, fill = tk.X)
+    button = tk.Button(root, text="Get Scale Value", command=sel)
+    button.pack(anchor=tk.CENTER)  
+    canvas.create_line(150, 0, 150, 300, fill="#476042")
+def sel():
+    selection = float(var.get())
+    rcol = selection/rx
+    rrow = row/ry
+    canvas.create_line(rcol, 0, rcol, rrow, fill="#476042")
+    print(selection)
+   
 class Toplevel1:
     #SmrtSummary object                  
     ss = SmrtSummary()   
