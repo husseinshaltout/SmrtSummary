@@ -16,35 +16,39 @@ def vp_start_gui():
 
 def new_window():
     global var,rx,ry,row,cols,canvas
-    rx = 6.4#Image size on x or width / image resize
-    ry = 3.6#Image size on y or hieght / image resize
+    size = 600
+    im = cv.imread("frames/frame0.jpg",cv.IMREAD_COLOR)
+    cols = im.shape[1]#vertical pixels
+    row = im.shape[0] #horizontal pixels 
+    
+    rx = int(cols)/size#Image size on x or width / image resize
+    ry = int(row)/size#Image size on y or hieght / image resize
+    
+    
     var = tk.IntVar()
     root = tk.Toplevel()
-    root.geometry("300x300+500+200")
+    root.geometry("600x600+500+80")
     root.title("Scanline")
     root["bg"] = "navy"
     canvas = tk.Canvas(root)
-    canvas.place(width=300, height=300)
+    canvas.place(width=size, height=size)
     img = Image.open("frames/frame0.jpg")
-    img = img.resize((300, 300), Image.ANTIALIAS)
+    img = img.resize((size, size), Image.ANTIALIAS)
     img = ImageTk.PhotoImage(img)  
     canvas.create_image(0,0, image=img, anchor="nw")  
     canvas.image = img  
     
-    im = cv.imread("frames/frame0.jpg",cv.IMREAD_COLOR)
-    cols = im.shape[1]#vertical pixels
-    row = im.shape[0] #horizontal pixels 
     slider = tk.Scale(root, from_=0, to=cols,variable = var,  orient=tk.HORIZONTAL)
     slider.pack(side = tk.BOTTOM, fill = tk.X)
     button = tk.Button(root, text="Select scanline", command=sel)
     button.pack(anchor=tk.CENTER)  
 def sel():
     global selection
-    selection = float(var.get())
+    selection = int(var.get())
     rcol = selection/rx
     rrow = row/ry
-    canvas.create_line(rcol, 0, rcol, rrow, fill="red", width=3)
-    print(selection)
+    canvas.create_line(int(rcol), 0, int(rcol), rrow, fill="red", width=3)
+    print(selection,int(rcol),rrow)
     return selection
    
 class Toplevel1:
@@ -98,9 +102,9 @@ class Toplevel1:
         self.Button1.place(relx=0.803, rely=0.6, height=24, width=85)
         self.Button1.configure(text='''Get summary''')
         #Get video Button
-        self._video = tk.Button(top,command=self.fun2)
-        self._video.place(relx=0.803, rely=0.7, height=24, width=85)
-        self._video.configure(text='''Get summary''')
+        self.Button_video = tk.Button(top,command=self.fun2)
+        self.Button_video.place(relx=0.803, rely=0.7, height=24, width=85)
+        self.Button_video.configure(text='''Open video''')
     #view frame in canvas
     def C2_showimg(self,z):
         x = self.Scrolledlistbox1.get(tk.ANCHOR)
