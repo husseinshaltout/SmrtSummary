@@ -1,7 +1,7 @@
 from SmrtSummary import SmrtSummary
 import glob
 import cv2 as cv
-
+import datetime
 from PIL import Image, ImageTk
 import tkinter.filedialog
 try:
@@ -53,27 +53,32 @@ def sel():
 #Instance of the video
 def Video_window():
     global Vvar,Vrow,Vcols,Vcanvas
-    im = cv.imread("frames/frame0.jpg",cv.IMREAD_COLOR)
+    im = cv.imread("summary.png",cv.IMREAD_COLOR)
     Vcols = im.shape[1]#vertical pixels
     Vrow = im.shape[0] #horizontal pixels 
     Vvar = tk.IntVar()
     root = tk.Toplevel()
-    root.geometry("600x600+500+80")
+    root.geometry("157x600+500+80")
     root.title("Image Summary")
     Vcanvas = tk.Canvas(root)
-    Vcanvas.place(width=Vrow, height=Vcols)
+    Vcanvas.place(width=Vrow, height=1080)
     img = Image.open("summary.png")
     img = ImageTk.PhotoImage(img)  
     Vcanvas.create_image(0,0, image=img, anchor="nw")  
     Vcanvas.image = img  
-    slider = tk.Scale(Vcanvas, from_=0, to=Vcols,variable = Vvar, orient=tk.HORIZONTAL)
+    scrollbar = tk.Scrollbar(root,command=Vcanvas.yview)
+    scrollbar.pack( side = tk.RIGHT, fill = tk.Y )       
+    Vcanvas.config(yscrollcommand=scrollbar.set)     
+    slider = tk.Scale(root, from_=0, to=Vcols,variable = Vvar, orient=tk.HORIZONTAL)
     slider.pack(side = tk.BOTTOM, fill = tk.X)
     button = tk.Button(root, text="Select line", command=Vsel)
     button.pack(anchor=tk.CENTER)    
 def Vsel():
     Vselection = int(Vvar.get())
-    Vcanvas.create_line(int(Vcols), 0, int(Vcols), Vrow, fill="red", width=3)
-    print(Vselection)
+    Vcanvas.create_line(int(Vselection), 0, int(Vselection), Vrow, fill="red", width=3)
+    print(Vselection,Vcols,Vrow)
+    timestamp = Vselection/30
+    print(str(datetime.timedelta(seconds=timestamp)))
 class Toplevel1:
     ss = SmrtSummary()#SmrtSummary object 
     def __init__(self, top=None):
