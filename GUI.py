@@ -8,8 +8,6 @@ import glob
 import sys
 import os
 from PIL import Image, ImageTk
-import cv2
-
 try:
     import Tkinter as tk
 except ImportError:
@@ -72,7 +70,7 @@ class Toplevel1:
  
         
         self.canvas = tk.Canvas(top)
-        self.canvas.place(relx=0.028, rely=0.022, relheight=0.878, width=350)    
+        self.canvas.place(relx=0.028, rely=0.022, relwidth=0.5, relheight=0.878)    
         self.img = Image.open("summary.png")
         self.img = self.img.resize((157, 1080), Image.ANTIALIAS)
         self.img = ImageTk.PhotoImage(self.img)  
@@ -84,13 +82,18 @@ class Toplevel1:
         # img = ImageTk.PhotoImage(img)
 
 
-        self.scrollbar = tk.Scrollbar(top)
-        self.scrollbar.pack( side = tk.RIGHT, fill = tk.Y )
+
         
-        self.Scrolledlistbox1 = tk.Listbox(top, yscrollcommand = self.scrollbar.set )
+        self.Scrolledlistbox1 = tk.Listbox(top)       
+        self.Scrolledlistbox1.place(relx=0.563, rely=0.022, relheight=0.878, relwidth=0.142)
         
-        self.Scrolledlistbox1.place(relx=0.563, rely=0.022, relheight=0.878
-                , relwidth=0.142)
+        self.scrollbar = tk.Scrollbar(top,command=self.Scrolledlistbox1.yview)
+        self.scrollbar.pack( side = tk.RIGHT, fill = tk.Y )       
+        self.Scrolledlistbox1.configure(yscrollcommand=self.scrollbar.set)        
+        self.Scrolledlistbox1.bind("<Double-Button-1>", self.showimg)
+        
+
+        
         
         
         self.path = 'frames'
@@ -100,29 +103,10 @@ class Toplevel1:
             # os.path.join(self.fpath ,"frame{0}.jpg").format(x)
 
 
-        IMAGE_RESIZE_FACTOR = .3
-        self.S_canvas = tk.Canvas(top)
-        self.S_canvas.place(relx=0.720, rely=0.022, relheight=0.250, relwidth=0.250) 
-        img = cv2.imread("frames/frame0.jpg")            
-        img = cv2.resize(img, (0,0), fx = IMAGE_RESIZE_FACTOR, fy = IMAGE_RESIZE_FACTOR)
-        b, g, r = cv2.split(img)
-        img = cv2.merge((r,g,b))
-        im = Image.fromarray(img)
-        self.image = ImageTk.PhotoImage(image=im)  
-        
-        # self.img = Image.open("frames/frame0.jpg")
-        # self.img = self.img.resize((400, 200), Image.ANTIALIAS)
-        self.img = ImageTk.PhotoImage(self.img)  
-        self.S_canvas.create_image(0,0, image=self.img, anchor="nw")  
-        self.S_canvas.image = self.image                
-            
 
-        # self.TFrame1 = ttk.Frame(top)
-        # self.TFrame1.place(relx=0.732, rely=0.022, relheight=0.256
-        #         , relwidth=0.246)
-        # self.TFrame1.configure(relief='groove')
-        # self.TFrame1.configure(borderwidth="2")
-        # self.TFrame1.configure(relief="groove")
+        self.S_canvas = tk.Canvas(top)
+        self.S_canvas.place(relx=0.720, rely=0.022, relheight=0.250, relwidth=0.250)                  
+            
 
         self.Button1 = tk.Button(top)
         self.Button1.place(relx=0.803, rely=0.5, height=24, width=85)
@@ -159,7 +143,15 @@ class Toplevel1:
         self.Button_scan.configure(highlightcolor="black")
         self.Button_scan.configure(pady="0")
         self.Button_scan.configure(text='''Scanline crop''')
-
+        
+    def showimg(self,z):
+        x = self.Scrolledlistbox1.get(tk.ANCHOR)
+        self.img = Image.open("frames/%s"%x)
+        self.img = self.img.resize((400, 200), Image.ANTIALIAS)
+        self.img = ImageTk.PhotoImage(self.img)  
+        self.S_canvas.create_image(0,0, image=self.img, anchor="nw")  
+        self.S_canvas.image = self.img  
+        print(x,z)
 
 # The following code is added to facilitate the Scrolled widgets you specified.
 class AutoScroll(object):
