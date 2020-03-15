@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Mar 14 06:32:54 2020
-
-@author: Dell
-"""
 from SmrtSummary import SmrtSummary
 import glob
 
