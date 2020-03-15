@@ -14,25 +14,15 @@ def vp_start_gui():
     top = Toplevel1 (root)
     root.mainloop()
 
-def new_window(Win_class):
-    global win2
-    try:
-        if win2.state() == "normal": win2.focus()
-    except NameError as e:
-        print(e)
-        win2 = tk.Toplevel(win)
-        Win_class(win2)
- 
-class Win2:
-    def __init__(self, root):
-        self.root = root
-        self.root.geometry("300x300+500+200")
-        self.root["bg"] = "navy"
-        self.w = tk.Scale(root, from_=0, to=200, orient=tk.HORIZONTAL)
-        self.w.pack()
+def new_window():
+    root = tk.Toplevel()
+    root.geometry("300x300+500+200")
+    root.title("Scanline")
+    root["bg"] = "navy"
+    slider = tk.Scale(root, from_=0, to=200, orient=tk.HORIZONTAL)
+    slider.pack()
         
 class Toplevel1:
-    Win2c = Win2()
     #SmrtSummary object                  
     ss = SmrtSummary()   
     def __init__(self, top=None):
@@ -75,7 +65,7 @@ class Toplevel1:
         self.Button2.place(relx=0.803, rely=0.4, height=24, width=85)
         self.Button2.configure(text='''Split video''')        
         #Select scanline Button
-        self.Button_scan = tk.Button(top,command=lambda: new_window(self.Win2c))
+        self.Button_scan = tk.Button(top,command=lambda: new_window())
         self.Button_scan.place(relx=0.803, rely=0.5, height=24, width=85)
         self.Button_scan.configure(text='''Select scanline''')
         #Get Summary Button
