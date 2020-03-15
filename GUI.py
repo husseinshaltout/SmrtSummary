@@ -39,11 +39,13 @@ def new_window():
     button = tk.Button(root, text="Select scanline", command=sel)
     button.pack(anchor=tk.CENTER)  
 def sel():
+    global selection
     selection = float(var.get())
     rcol = selection/rx
     rrow = row/ry
     canvas.create_line(rcol, 0, rcol, rrow, fill="red", width=3)
     print(selection)
+    return selection
    
 class Toplevel1:
     #SmrtSummary object                  
@@ -125,7 +127,7 @@ class Toplevel1:
         self.fList()
 
     def fun2(self):
-        self.ss.scanline()
+        self.ss.scanline(selection)
         print("scanline Done!")
         self.ss.image_Summary()
         print("image_Summary Done!")
