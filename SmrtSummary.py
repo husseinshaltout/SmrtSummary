@@ -29,8 +29,7 @@ class SmrtSummary:
             print("Splitting Frame #%s"%str(i))
             i+=1        
         self.cap.release()
-        cv.destroyAllWindows()
-        
+        cv.destroyAllWindows()        
     def scanline(self,x): 
         #Crop all frames with defined x value/line
         for filename in self.fpath:
@@ -38,8 +37,7 @@ class SmrtSummary:
             rows = im.shape[0]        
             cropped = im[0:rows, x-1:x]  
             print(filename.split("\\")[-1])
-            cv.imwrite(os.path.join(self.C_path , filename.split("\\")[-1]), cropped)
-    
+            cv.imwrite(os.path.join(self.C_path , filename.split("\\")[-1]), cropped)    
     def image_Summary(self):
         # Concatenate all cropped images horizontaly 
         for x in range(len(self.fpath)):
@@ -50,8 +48,7 @@ class SmrtSummary:
                 img = cv.imread(os.path.join(self.C_path ,"frame{0}.jpg").format(x))
                 numpy_horizontal = np.hstack((numpy_horizontal, img))
         #Create summary image
-        cv.imwrite("summary.png", numpy_horizontal)
-        
+        cv.imwrite("summary.png", numpy_horizontal) 
     def mvideo(self):
         img_array = []
         for x in range(len(self.fpath)):
@@ -62,9 +59,7 @@ class SmrtSummary:
         out = cv.VideoWriter('project.avi',cv.VideoWriter_fourcc(*'DIVX'), 30, size)
         for i in range(len(img_array)):
             out.write(img_array[i])
-        out.release()
-        
-        
+        out.release()  
     def show_wait_destroy(self, winname, img):
         cv.imshow(winname, img)
         cv.moveWindow(winname, 500, 0)
