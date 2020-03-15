@@ -32,18 +32,17 @@ def new_window():
     canvas.image = img  
     
     im = cv.imread("frames/frame0.jpg",cv.IMREAD_COLOR)
-    cols = im.shape[1]  
-    row = im.shape[0]  
+    cols = im.shape[1]#vertical pixels
+    row = im.shape[0] #horizontal pixels 
     slider = tk.Scale(root, from_=0, to=cols,variable = var,  orient=tk.HORIZONTAL)
     slider.pack(side = tk.BOTTOM, fill = tk.X)
-    button = tk.Button(root, text="Get Scale Value", command=sel)
+    button = tk.Button(root, text="Select scanline", command=sel)
     button.pack(anchor=tk.CENTER)  
-    canvas.create_line(150, 0, 150, 300, fill="#476042")
 def sel():
     selection = float(var.get())
     rcol = selection/rx
     rrow = row/ry
-    canvas.create_line(rcol, 0, rcol, rrow, fill="#476042")
+    canvas.create_line(rcol, 0, rcol, rrow, fill="red", width=3)
     print(selection)
    
 class Toplevel1:
