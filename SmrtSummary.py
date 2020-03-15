@@ -17,9 +17,9 @@ class SmrtSummary:
         self.C_path = '%s/cropped'%self.path
         #All files with extension jpeg in frames folder
         self.fpath = glob.glob('%s\\*.jpg'%self.path)
-        self.cap= cv.VideoCapture('test.mp4')
     #Function to split video into frames
-    def split(self):
+    def split(self,l):
+        self.cap= cv.VideoCapture(l)
         i=0
         while(self.cap.isOpened()):
             ret, frame = self.cap.read()
