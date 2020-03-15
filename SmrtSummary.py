@@ -31,12 +31,12 @@ class SmrtSummary:
         self.cap.release()
         cv.destroyAllWindows()
         
-    def scanline(self): 
+    def scanline(self,x): 
         #Crop all frames with defined x value/line
         for filename in self.fpath:
             im = cv.imread(filename,cv.IMREAD_COLOR)
             rows = im.shape[0]        
-            cropped = im[0:rows, 1069:1070]  
+            cropped = im[0:rows, x-1:x]  
             print(filename.split("\\")[-1])
             cv.imwrite(os.path.join(self.C_path , filename.split("\\")[-1]), cropped)
     
