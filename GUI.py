@@ -97,6 +97,10 @@ class Toplevel1:
         self.Button1 = tk.Button(top,command=self.fun2)
         self.Button1.place(relx=0.803, rely=0.6, height=24, width=85)
         self.Button1.configure(text='''Get summary''')
+        #Get video Button
+        self._video = tk.Button(top,command=self.fun2)
+        self._video.place(relx=0.803, rely=0.7, height=24, width=85)
+        self._video.configure(text='''Get summary''')
     #view frame in canvas
     def C2_showimg(self,z):
         x = self.Scrolledlistbox1.get(tk.ANCHOR)
@@ -121,13 +125,14 @@ class Toplevel1:
             
     def fun1(self):
         l = self.label1['text']
+        tkinter.messagebox.showinfo(title="Please Wait", message="Don't close any windows, video is proccessing")
         print(l)
         self.ss.split(l)
         print("aaaaa")
         self.fList()
 
     def fun2(self):
-        self.ss.scanline(selection)
+        self.ss.scanline(int(selection))
         print("scanline Done!")
         self.ss.image_Summary()
         print("image_Summary Done!")
