@@ -13,7 +13,7 @@ def vp_start_gui():
     root = tk.Tk()
     top = Toplevel1 (root)
     root.mainloop()
-
+#Scan line selection
 def new_window():
     global var,rx,ry,row,cols,canvas
     size = 600
@@ -50,10 +50,32 @@ def sel():
     canvas.create_line(int(rcol), 0, int(rcol), rrow, fill="red", width=3)
     print(selection,int(rcol),rrow)
     return selection
-   
+#Instance of the video
+def Video_window():
+    global Vvar,Vrow,Vcols,Vcanvas
+    im = cv.imread("frames/frame0.jpg",cv.IMREAD_COLOR)
+    Vcols = im.shape[1]#vertical pixels
+    Vrow = im.shape[0] #horizontal pixels 
+    Vvar = tk.IntVar()
+    root = tk.Toplevel()
+    root.geometry("600x600+500+80")
+    root.title("Image Summary")
+    Vcanvas = tk.Canvas(root)
+    Vcanvas.place(width=Vrow, height=Vcols)
+    img = Image.open("summary.png")
+    img = ImageTk.PhotoImage(img)  
+    Vcanvas.create_image(0,0, image=img, anchor="nw")  
+    Vcanvas.image = img  
+    slider = tk.Scale(Vcanvas, from_=0, to=Vcols,variable = Vvar, orient=tk.HORIZONTAL)
+    slider.pack(side = tk.BOTTOM, fill = tk.X)
+    button = tk.Button(root, text="Select line", command=Vsel)
+    button.pack(anchor=tk.CENTER)    
+def Vsel():
+    Vselection = int(Vvar.get())
+    Vcanvas.create_line(int(Vcols), 0, int(Vcols), Vrow, fill="red", width=3)
+    print(Vselection)
 class Toplevel1:
-    #SmrtSummary object                  
-    ss = SmrtSummary()   
+    ss = SmrtSummary()#SmrtSummary object 
     def __init__(self, top=None):
 
         top.geometry("710x450+333+128")
@@ -102,7 +124,7 @@ class Toplevel1:
         self.Button1.place(relx=0.803, rely=0.6, height=24, width=85)
         self.Button1.configure(text='''Get summary''')
         #Get video Button
-        self.Button_video = tk.Button(top,command=self.fun2)
+        self.Button_video = tk.Button(top,command=lambda:Video_window())
         self.Button_video.place(relx=0.803, rely=0.7, height=24, width=85)
         self.Button_video.configure(text='''Open video''')
     #view frame in canvas
