@@ -19,12 +19,9 @@ def new_window():
     size = 600
     im = cv.imread("frames/frame0.jpg",cv.IMREAD_COLOR)
     cols = im.shape[1]#vertical pixels
-    row = im.shape[0] #horizontal pixels 
-    
+    row = im.shape[0] #horizontal pixels     
     rx = int(cols)/size#Image size on x or width / image resize
     ry = int(row)/size#Image size on y or hieght / image resize
-    
-    
     var = tk.IntVar()
     root = tk.Toplevel()
     root.geometry("600x600+500+80")
@@ -36,8 +33,7 @@ def new_window():
     img = img.resize((size, size), Image.ANTIALIAS)
     img = ImageTk.PhotoImage(img)  
     canvas.create_image(0,0, image=img, anchor="nw")  
-    canvas.image = img  
-    
+    canvas.image = img      
     slider = tk.Scale(root, from_=0, to=cols,variable = var,  orient=tk.HORIZONTAL)
     slider.pack(side = tk.BOTTOM, fill = tk.X)
     button = tk.Button(root, text="Select scanline", command=sel)
@@ -51,8 +47,9 @@ def sel():
     print(selection,int(rcol),rrow)
     return selection
 #Instance of the video
-def Video_window():
-    global Vvar,Vrow,Vcols,Vcanvas
+def Video_window(vl):
+    global Vvar,Vrow,Vcols,Vcanvas,gVL
+    gVL = vl
     im = cv.imread("summary.png",cv.IMREAD_COLOR)
     Vcols = im.shape[1]#vertical pixels
     Vrow = im.shape[0] #horizontal pixels 
@@ -73,28 +70,58 @@ def Video_window():
     slider.pack(side = tk.BOTTOM, fill = tk.X)
     button = tk.Button(root, text="Select line", command=Vsel)
     button.pack(anchor=tk.CENTER)    
+    print(vl)
 def Vsel():
     Vselection = int(Vvar.get())
     Vcanvas.create_line(int(Vselection), 0, int(Vselection), Vrow, fill="red", width=3)
     print(Vselection,Vcols,Vrow)
     timestamp = Vselection/30
-    print(str(datetime.timedelta(seconds=timestamp)))
+    ts = str(datetime.timedelta(seconds=timestamp))
+    print(ts)
+    tk.messagebox.showinfo(title="Play video", message="Timestamp: %s \n Press q to exit"%ts)
+    print(gVL)
+    video_play(Vselection,gVL)
+def video_play(index,location):
+    # Create a VideoCapture object and read from input file
+    # If the input is the camera, pass 0 instead of the video file name
+    cap = cv.VideoCapture(location)
+    cap.set(cv.CAP_PROP_POS_FRAMES, index)
+    # Check if camera opened successfully
+    if (cap.isOpened()== False): 
+      print("Error opening video stream or file")    
+    # Read until video is completed
+    while(cap.isOpened()):
+      # Capture frame-by-frame
+      ret, frame = cap.read()
+      if ret == True:    
+        # Display the resulting frame
+        cv.namedWindow('Frame',cv.WINDOW_NORMAL)
+        cv.resizeWindow('Frame', 600,600)
+        cv.imshow('Frame',frame)
+        cv.moveWindow('Frame', 500, 0)
+        # Press Q on keyboard to  exit
+        if cv.waitKey(25) & 0xFF == ord('q'):
+          break    
+      # Break the loop
+      else: 
+        break    
+    # When everything done, release the video capture object
+    cap.release()    
+    # Closes all the frames
+    cv.destroyAllWindows()    
 class Toplevel1:
     ss = SmrtSummary()#SmrtSummary object 
     def __init__(self, top=None):
-
+        self.split_flag = 0
         top.geometry("710x450+333+128")
         top.minsize(120, 1)
         top.maxsize(1364, 749)
         top.resizable(1, 1)
         top.title("SmrtSummary")
-        top.configure(background="#d9d9d9")
-
- 
+        top.configure(background="#d9d9d9") 
         #Canvas showing summary image           
         self.canvas = tk.Canvas(top)
         self.canvas.place(relx=0.028, rely=0.022, relwidth=0.5, relheight=0.878)    
-
         #Listbox showing all frames
         self.Scrolledlistbox1 = tk.Listbox(top)       
         self.Scrolledlistbox1.place(relx=0.563, rely=0.022, relheight=0.878, relwidth=0.142)
@@ -113,7 +140,7 @@ class Toplevel1:
         self.Button_load = tk.Button(top,command=self.fileDialog)
         self.Button_load.place(relx=0.803, rely=0.3, height=24, width=85)
         self.Button_load.configure(text='''Load video''')
-        
+        #Video location label        
         self.label1 = tk.Label(top, text = "")
         self.label1.place(relx=0.720, rely=0.36, height=12, relwidth=0.250)
         #Split Video button
@@ -129,7 +156,7 @@ class Toplevel1:
         self.Button1.place(relx=0.803, rely=0.6, height=24, width=85)
         self.Button1.configure(text='''Get summary''')
         #Get video Button
-        self.Button_video = tk.Button(top,command=lambda:Video_window())
+        self.Button_video = tk.Button(top,command=lambda:Video_window(self.label1['text']))
         self.Button_video.place(relx=0.803, rely=0.7, height=24, width=85)
         self.Button_video.configure(text='''Open video''')
     #view frame in canvas
@@ -153,28 +180,32 @@ class Toplevel1:
     def fList(self):
         for x in range(len(self.fpath)):
             self.Scrolledlistbox1.insert(tk.END, "frame{0}.jpg".format(x))
-            
-    def fun1(self):
+    #get video location then split video then show frames in boxlist        
+    def fun1(self):     
         l = self.label1['text']
-        tkinter.messagebox.showinfo(title="Please Wait", message="Don't close any windows, video is proccessing")
-        print(l)
-        self.ss.split(l)
-        print("aaaaa")
-        self.fList()
-
+        if(l ==""):
+            tkinter.messagebox.showinfo(title="No video", message="Please select a video first")
+        else:
+            tkinter.messagebox.showinfo(title="Please Wait", message="Don't close any windows, video is proccessing")
+            print(l)
+            self.ss.split(l)
+            print("aaaaa")
+            self.fList()
+            self.split_flag = 1
+    #Select scanline to crop and get video summary
     def fun2(self):
+        if(split_flag == 0):
+            tkinter.messagebox.showinfo(title="Split Video", message="Please split video first")
         self.ss.scanline(int(selection))
         print("scanline Done!")
         self.ss.image_Summary()
         print("image_Summary Done!")
         self.C1_showimg()
-        
-        
+    #File dialog for browing to open video    
     def fileDialog(self):     
         self.filename = tk.filedialog.askopenfilename(initialdir = "/",title = "Select file",filetypes = (("mp4 files","*.mp4"),("all files","*.*")))
         print(self.filename)
         self.label1.configure(text = self.filename)
-        return self.filename
 if __name__ == '__main__':
     vp_start_gui()
 
