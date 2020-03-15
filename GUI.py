@@ -48,8 +48,12 @@ def sel():
     return selection
 #Instance of the video
 def Video_window(vl):
-    global Vvar,Vrow,Vcols,Vcanvas,gVL
+    global Vvar,Vrx,Vry,Vrow,Vcols,Vcanvas,gVL
     gVL = vl
+    vw = 160#Image resize and canvas width
+    vh = 600#Image resize and canvas height
+    Vrx = int(cols)/vw#Image size on x or width / image resize
+    Vry = int(row)/vh#Image size on y or hieght / image resize
     if(len(gVL) == 0):
         tkinter.messagebox.showinfo(title="Get Summary", message="Please create video summary to play video")
     else:
@@ -61,8 +65,9 @@ def Video_window(vl):
         root.geometry("157x600+500+80")
         root.title("Image Summary")
         Vcanvas = tk.Canvas(root)
-        Vcanvas.place(width=Vrow, height=1080)
+        Vcanvas.place(width=vw, height=vh)
         img = Image.open("summary.png")
+        img = img.resize((vw, vh), Image.ANTIALIAS)
         img = ImageTk.PhotoImage(img)  
         Vcanvas.create_image(0,0, image=img, anchor="nw")  
         Vcanvas.image = img  
@@ -76,8 +81,10 @@ def Video_window(vl):
     print(len(gVL))
 def Vsel():
     Vselection = int(Vvar.get())
-    Vcanvas.create_line(int(Vselection), 0, int(Vselection), Vrow, fill="red", width=3)
-    print(Vselection,Vcols,Vrow)
+    rcol = Vselection/Vrx
+    rrow = Vrow/Vry
+    Vcanvas.create_line(int(rcol), 0, int(rcol), rrow, fill="red", width=3)
+    print(Vselection,rcol,rrow)
     timestamp = Vselection/30
     ts = str(datetime.timedelta(seconds=timestamp))
     print(ts)
