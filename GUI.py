@@ -185,7 +185,8 @@ class Toplevel1:
         for x in range(len(self.fpath)):
             self.Scrolledlistbox1.insert(tk.END, "frame{0}.jpg".format(x))
     #get video location then split video then show frames in boxlist        
-    def fun1(self):     
+    def fun1(self): 
+        print(len(self.fpath))
         l = self.label1['text']
         if(l ==""):
             tkinter.messagebox.showinfo(title="No video", message="Please select a video first")
@@ -212,8 +213,7 @@ class Toplevel1:
             print("scanline Done!")
             self.ss.image_Summary()
             print("image_Summary Done!")
-            self.C1_showimg()
-        
+            self.C1_showimg()        
     #File dialog for browing to open video    
     def fileDialog(self):     
         self.filename = tk.filedialog.askopenfilename(initialdir = "/",title = "Select file",filetypes = (("mp4 files","*.mp4"),("all files","*.*")))
