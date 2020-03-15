@@ -10,14 +10,14 @@ import os
 import glob
 
 class SmrtSummary:
+    #Splitted frames from video location
+    path = 'frames'
+    #cropped files location
+    C_path = '%s/cropped'%path
+    #All files with extension jpeg in frames folder
+    fpath = glob.glob('%s\\*.jpg'%path)
     def __init__(self):
         self.cap= cv.VideoCapture('test.mp4')
-        #Splitted frames from video location
-        self.path = 'frames'
-        #cropped files location
-        self.C_path = '%s/cropped'%self.path
-        #All files with extension jpeg in frames folder
-        self.fpath = glob.glob('%s\\*.jpg'%self.path)
     #Function to split video into frames
     def split(self):
         i=0
@@ -25,7 +25,7 @@ class SmrtSummary:
             ret, frame = self.cap.read()
             if ret == False:
                 break            
-            cv.imwrite(os.path.join(self.path , 'frame'+str(i)+'.jpg'), frame)
+            cv.imwrite(os.path.join(path , 'frame'+str(i)+'.jpg'), frame)
             print("Splitting Frame #%s"%str(i))
             i+=1        
         self.cap.release()
@@ -33,29 +33,29 @@ class SmrtSummary:
         
     def scanline(self): 
         #Crop all frames with defined x value/line
-        for filename in self.fpath:
+        for filename in fpath:
             im = cv.imread(filename,cv.IMREAD_COLOR)
             rows = im.shape[0]        
             cropped = im[0:rows, 1069:1070]  
             print(filename.split("\\")[-1])
-            cv.imwrite(os.path.join(self.C_path , filename.split("\\")[-1]), cropped)
+            cv.imwrite(os.path.join(C_path , filename.split("\\")[-1]), cropped)
     
     def image_Summary(self):
         # Concatenate all cropped images horizontaly 
-        for x in range(len(self.fpath)):
-            print(os.path.join(self.C_path ,"frame{0}.jpg").format(x))
+        for x in range(len(fpath)):
+            print(os.path.join(C_path ,"frame{0}.jpg").format(x))
             if(x == 0):
-                numpy_horizontal = cv.imread(os.path.join(self.C_path ,"frame{0}.jpg").format(x))
+                numpy_horizontal = cv.imread(os.path.join(C_path ,"frame{0}.jpg").format(x))
             else:
-                img = cv.imread(os.path.join(self.C_path ,"frame{0}.jpg").format(x))
+                img = cv.imread(os.path.join(C_path ,"frame{0}.jpg").format(x))
                 numpy_horizontal = np.hstack((numpy_horizontal, img))
         #Create summary image
         cv.imwrite("summary.png", numpy_horizontal)
         
     def mvideo(self):
         img_array = []
-        for x in range(len(self.fpath)):
-            img = cv.imread(os.path.join(self.C_path ,"frame{0}.jpg").format(x))
+        for x in range(len(fpath)):
+            img = cv.imread(os.path.join(C_path ,"frame{0}.jpg").format(x))
             height, width, layers = img.shape
             size = (width,height)
             img_array.append(img)
