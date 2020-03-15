@@ -50,27 +50,30 @@ def sel():
 def Video_window(vl):
     global Vvar,Vrow,Vcols,Vcanvas,gVL
     gVL = vl
-    im = cv.imread("summary.png",cv.IMREAD_COLOR)
-    Vcols = im.shape[1]#vertical pixels
-    Vrow = im.shape[0] #horizontal pixels 
-    Vvar = tk.IntVar()
-    root = tk.Toplevel()
-    root.geometry("157x600+500+80")
-    root.title("Image Summary")
-    Vcanvas = tk.Canvas(root)
-    Vcanvas.place(width=Vrow, height=1080)
-    img = Image.open("summary.png")
-    img = ImageTk.PhotoImage(img)  
-    Vcanvas.create_image(0,0, image=img, anchor="nw")  
-    Vcanvas.image = img  
-    scrollbar = tk.Scrollbar(root,command=Vcanvas.yview)
-    scrollbar.pack( side = tk.RIGHT, fill = tk.Y )       
-    Vcanvas.config(yscrollcommand=scrollbar.set)     
-    slider = tk.Scale(root, from_=0, to=Vcols,variable = Vvar, orient=tk.HORIZONTAL)
-    slider.pack(side = tk.BOTTOM, fill = tk.X)
-    button = tk.Button(root, text="Select line", command=Vsel)
-    button.pack(anchor=tk.CENTER)    
-    print(vl)
+    if(len(gVL) == 0):
+        tkinter.messagebox.showinfo(title="Get Summary", message="Please create video summary to play video")
+    else:
+        im = cv.imread("summary.png",cv.IMREAD_COLOR)
+        Vcols = im.shape[1]#vertical pixels
+        Vrow = im.shape[0] #horizontal pixels 
+        Vvar = tk.IntVar()
+        root = tk.Toplevel()
+        root.geometry("157x600+500+80")
+        root.title("Image Summary")
+        Vcanvas = tk.Canvas(root)
+        Vcanvas.place(width=Vrow, height=1080)
+        img = Image.open("summary.png")
+        img = ImageTk.PhotoImage(img)  
+        Vcanvas.create_image(0,0, image=img, anchor="nw")  
+        Vcanvas.image = img  
+        scrollbar = tk.Scrollbar(root,command=Vcanvas.yview)
+        scrollbar.pack( side = tk.RIGHT, fill = tk.Y )       
+        Vcanvas.config(yscrollcommand=scrollbar.set)     
+        slider = tk.Scale(root, from_=0, to=Vcols,variable = Vvar, orient=tk.HORIZONTAL)
+        slider.pack(side = tk.BOTTOM, fill = tk.X)
+        button = tk.Button(root, text="Select line", command=Vsel)
+        button.pack(anchor=tk.CENTER)    
+    print(len(gVL))
 def Vsel():
     Vselection = int(Vvar.get())
     Vcanvas.create_line(int(Vselection), 0, int(Vselection), Vrow, fill="red", width=3)
@@ -109,10 +112,11 @@ def video_play(index,location):
     cap.release()    
     # Closes all the frames
     cv.destroyAllWindows()    
-class Toplevel1:
+class Toplevel1:    
     ss = SmrtSummary()#SmrtSummary object 
     def __init__(self, top=None):
         self.split_flag = 0
+        self.scanline_flag = 0
         top.geometry("710x450+333+128")
         top.minsize(120, 1)
         top.maxsize(1364, 749)
@@ -148,7 +152,7 @@ class Toplevel1:
         self.Button2.place(relx=0.803, rely=0.4, height=24, width=85)
         self.Button2.configure(text='''Split video''')        
         #Select scanline Button
-        self.Button_scan = tk.Button(top,command=lambda: new_window())
+        self.Button_scan = tk.Button(top,command=lambda: self.callback())
         self.Button_scan.place(relx=0.803, rely=0.5, height=24, width=85)
         self.Button_scan.configure(text='''Select scanline''')
         #Get Summary Button
@@ -192,15 +196,24 @@ class Toplevel1:
             print("aaaaa")
             self.fList()
             self.split_flag = 1
-    #Select scanline to crop and get video summary
-    def fun2(self):
-        if(split_flag == 0):
+    #Newwindow callback with conditon
+    def callback(self):
+        if(self.split_flag == 0):
             tkinter.messagebox.showinfo(title="Split Video", message="Please split video first")
-        self.ss.scanline(int(selection))
-        print("scanline Done!")
-        self.ss.image_Summary()
-        print("image_Summary Done!")
-        self.C1_showimg()
+        else:
+            new_window()
+            self.scanline_flag = 1
+    #Select scanline to crop and get video summary
+    def fun2(self):        
+        if(self.scanline_flag== 0):
+            tkinter.messagebox.showinfo(title="No Scanline", message="Please select scanline")
+        else:
+            self.ss.scanline(int(selection))
+            print("scanline Done!")
+            self.ss.image_Summary()
+            print("image_Summary Done!")
+            self.C1_showimg()
+        
     #File dialog for browing to open video    
     def fileDialog(self):     
         self.filename = tk.filedialog.askopenfilename(initialdir = "/",title = "Select file",filetypes = (("mp4 files","*.mp4"),("all files","*.*")))
