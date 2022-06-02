@@ -1,0 +1,30 @@
+{% load static %}
+
+<nav class="p-4">
+    <div
+      class="mx-auto flex justify-between text-xl font-light"
+    >
+      <ul>
+        <li class="inline hover:font-bold hover:text-slate-900">
+          <a class="p-4" href="{% url 'index' %}">
+            <span>Home</span>
+          </a>
+        </li>
+        <li class="inline hover:font-bold hover:text-slate-900">
+          <a class="p-8" href="{% url 'upload' %}">
+            <span>New Summary</span>
+          </a>
+        </li>
+      </ul>
+      <ul>
+        <li class="inline hover:font-bold hover:text-slate-900">
+          <a class="p-8" href="#">
+              <svg class="inline-block align-middle w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+              </svg>
+            <span class="inline-block align-middle">Log out</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
