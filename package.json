@@ -4,7 +4,7 @@
   "description": "smrtsummary tailwind style",
   "main": "index.js",
   "scripts": {
-    "build-css": "tailwindcss -i static/src/input.css -o static/css/output.css --watch"
+    "build-css": "tailwindcss -i SmrtSummary/static/src/input.css -o SmrtSummary/static/css/output.css --watch"
   },
   "author": "Hussein Shaltout",
   "license": "ISC",

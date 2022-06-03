@@ -13,23 +13,23 @@
           style="width: 720px; height: 480px"
           class="mx-auto rounded-lg bg-gray-600"
         >
-          <canvas id="myCanvas" width="720" height="480"></canvas>
+          <canvas id="scanline_canvas" width="720" height="480"></canvas>
           <img
-            id="video_summary_image"
+            id="first_frame_image"
             src="{% static 'images/frame193.jpg' %}"
             style="display: none"
           />
           <!-- slider -->
           <div class="">
             <input
-              id="default-range"
+              id="canvas_range"
               type="range"
               value="0"
               min="0"
               max="100"
               step="1"
               class="w-full h-2 bg-gray-400 appearance-none cursor-pointer rounded-lg dark:bg-gray-700"
-              oninput="drawScanline()"
+              oninput="scanlineSliderHandler()"
             />
 
           </div>

@@ -2,11 +2,12 @@ const resizeCanvasContainer = () => {
   const canvasContainer = document.getElementById('canvas__container');
   const img = document.getElementById('video_summary_image');
   const { width } = img;
+  const { height } = img;
   canvasContainer.style.width = `${width}px`;
-  canvasContainer.style.height = '480px';
+  canvasContainer.style.height = `${height}px`;
 };
 
-const addFrameToCanvas = () => {
+const drawImageScaled = () => {
   const canvas = document.getElementById('myCanvas');
   const ctx = canvas.getContext('2d');
   const img = document.getElementById('video_summary_image');
@@ -29,10 +30,31 @@ const addFrameToCanvas = () => {
     img.height * ratio,
   );
 };
+const summaryDrawImage = () =>{
+  const canvas = document.getElementById('myCanvas');
+  const ctx = canvas.getContext('2d');
+  const canvasContainer = document.getElementById('canvas__container');
+  const imageObj = document.getElementById('video_summary_image');
+  const { width } = imageObj;
+  const { height } = imageObj;
+  canvasContainer.style.width = `${width}px`;
+  canvasContainer.style.height = `${height}px`;
+  canvas.style.width = '100%';
+  canvas.style.height = '100%';
+  // ...then set the internal size to match
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+
+  // ctx.canvas.width = `${width}`;
+  // ctx.canvas.height = 480;
+  ctx.clearRect(0, 0, ctx.width, ctx.height);
+  ctx.drawImage(imageObj, 0, 0, `${width}`, `${height}`);
+};
 
 window.onload = () => {
   // resizeCanvasContainer();
-  addFrameToCanvas();
+  // drawImageScaled();
+  summaryDrawImage();
 };
 
 const sec2time = (timeInSeconds) => {
@@ -65,16 +87,17 @@ const drawScanline = () => {
   document.getElementById('default-range').max = width;
   const sliderValue = document.getElementById('default-range').value;
   ctx.strokeStyle = '#FF0000';
-  ctx.lineWidth = 5;
+  ctx.lineWidth = 20;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  addFrameToCanvas();
+  // drawImageScaled();
+  summaryDrawImage();
   ctx.beginPath();
   ctx.moveTo(sliderValue, 0);
   ctx.lineTo(sliderValue, 480);
   ctx.stroke();
 };
 const videoSummarySliderHandler = () => {
-  resizeCanvasContainer();
+  // resizeCanvasContainer();
   drawScanline();
   timestampHandler();
 };
