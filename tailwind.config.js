@@ -1,14 +1,15 @@
 module.exports = {
   content: [
-    './templates/**/*.html'
+    './templates/**/*.html',
+    '../templates/accounts/*.html',
   ],
   theme: {
     extend: {
       colors: {
-        primary: "#0a3ae0",
+        primary: '#0a3ae0',
         secondary: {
-          100: "#212529",
-          200: "#0a40fa",
+          100: '#212529',
+          200: '#0a40fa',
         },
       },
     },

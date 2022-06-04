@@ -8,7 +8,8 @@
       </h4>
 
       <div class="mt-8">
-        <form class="flex items-center justify-center space-x-6">
+        <form enctype="multipart/form-data" method="POST" class="flex items-center justify-center space-x-6">
+          {% csrf_token %}
           <label class="block">
             <span class="sr-only">Choose video</span>
             <input
