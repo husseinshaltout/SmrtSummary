@@ -11,12 +11,8 @@
         <form enctype="multipart/form-data" method="POST" class="flex items-center justify-center space-x-6">
           {% csrf_token %}
           <label class="block">
-            <span class="sr-only">Choose video</span>
-            <input
-              type="file"
-              class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-secondary-200"
-            />
-          </label>
+          {{form}}
+         </label> 
           <button
             class="text-sm rounded-full border-0 font-semibold py-2 px-4 bg-primary hover:bg-secondary-200 active:bg-secondary-200 focus:outline-none focus:ring focus:ring-gray-300 text-white"
           >
