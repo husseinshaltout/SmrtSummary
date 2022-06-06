@@ -1,0 +1,33 @@
+{% extends '_base.html' %} 
+{% block content %}
+
+<main class="px-16 py-6 bg-gray-100">
+    <div class="m-2">
+      <h4 class="text-3xl font-semibold text-secondary-100">
+        Select video
+      </h4>
+
+      <div class="mt-8">
+        <form enctype="multipart/form-data" method="POST" class="flex items-center justify-center space-x-6">
+          {% csrf_token %}
+          <label class="block">
+          {{form}}
+         </label> 
+          <button
+            class="text-sm rounded-full border-0 font-semibold py-2 px-4 bg-primary hover:bg-secondary-200 active:bg-secondary-200 focus:outline-none focus:ring focus:ring-gray-300 text-white"
+          >
+            Upload file
+          </button>
+        </form>
+        <div
+          class="w-full mt-4 bg-gray-200 rounded-full h-2.5 dark:bg-gray-700"
+        >
+          <div
+            class="bg-primary h-2.5 rounded-full"
+            style="width: 45%"
+          ></div>
+        </div>
+      </div>
+    </div>
+  </main>
+{% endblock content %}

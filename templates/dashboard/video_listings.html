@@ -1,0 +1,38 @@
+{% extends '_base.html' %} 
+{% load static %}  
+{% block title %} | Uploaded Videos{% endblock title %}
+{% block content %}
+
+<main class="px-16 py-6 md:col-span-2 bg-gray-100">
+  <div class="m-2">
+    <h4 class="text-3xl font-semibold text-secondary-100">Videos</h4>
+
+    <div class="mt-8 grid lg:grid-cols-3 gap-10">
+      <!-- Video cards go here -->
+      {% if uploaded_videos %}
+        {% for video in uploaded_videos %}
+      <div class="card">
+        <a href="{% url 'scanline' video.id %}">
+          <img
+            class="hover:object-scale-down h-32 sm:h-48 w-full object-cover"
+            src="{% static 'images/frame193.jpg' %}"
+            alt=""
+          />
+          <div class="m-4">
+            <span class="block text-gray-500 text-sm">{{ video.title }}</span>
+          </div>
+          <div class="badge">
+            <span>{{ video.video_duration }}</span>
+          </div>
+        </a>
+      </div>
+      {% endfor %}
+      {% else %}
+        <div class="mx-4">
+          <h1 class="text-3xl">No videos</h1>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</main>
+{% endblock content %}

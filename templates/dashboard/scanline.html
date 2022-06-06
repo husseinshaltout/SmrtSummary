@@ -1,0 +1,48 @@
+{% extends '_base.html' %} {% load static %} {% block content %}
+
+<main class="px-16 py-6 bg-gray-100">
+  <div class="m-2">
+    <h4 class="text-3xl font-semibold text-secondary-100">Select scanline</h4>
+
+    <div class="mt-8">
+      <div
+        style="width: 720px; height: 480px"
+        class="mx-auto rounded-lg bg-gray-600"
+      >
+        <canvas id="scanline_canvas" width="720" height="480"></canvas>
+        <img
+          id="first_frame_image"
+          src="{% static 'images/frame193.jpg' %}"
+          style="display: none"
+        />
+        <!-- slider -->
+        <form method="POST" action="{% url 'scanline' video.id %}">
+          <div class="">
+            <input
+              id="canvas_range"
+              name="scanline_slider"
+              type="range"
+              value="0"
+              min="0"
+              max="100"
+              step="1"
+              class="w-full h-2 bg-gray-400 appearance-none cursor-pointer rounded-lg dark:bg-gray-700"
+              oninput="scanlineSliderHandler()"
+            />
+          </div>
+          <!-- end slider -->
+
+          {% csrf_token %}
+          <div class="flex items-center justify-center mt-2">
+            <button
+              class="text-sm rounded-full border-0 font-semibold py-2 px-4 bg-primary hover:bg-secondary-200 active:bg-secondary-200 focus:outline-none focus:ring focus:ring-gray-300 text-white"
+            >
+              Get Summary
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock content %}
