@@ -8,7 +8,7 @@ import os
 from django.contrib.auth.decorators import login_required
 
 
-@login_required
+@login_required(login_url='/accounts/login', redirect_field_name='')
 def home(request):
     videos = Video.objects.order_by(
                                     '-upload_date'
@@ -19,7 +19,7 @@ def home(request):
     return render(request, 'dashboard/video_listings.html', context)
 
 
-@login_required
+@login_required(login_url='/accounts/login', redirect_field_name='')
 def upload(request, user_id=None):
     form = VideoForm(request.POST or None, request.FILES or None)
     if request.method == 'POST':
@@ -41,7 +41,7 @@ def upload(request, user_id=None):
     return render(request, 'dashboard/upload.html', {"form": form})
 
 
-@login_required
+@login_required(login_url='/accounts/login', redirect_field_name='')
 def scanline(request, video_id):
     video = get_object_or_404(Video, pk=video_id)
     if video.uploaded_by != request.user:
@@ -65,7 +65,7 @@ def scanline(request, video_id):
             return render(request, 'dashboard/scanline.html', context)
 
 
-@login_required
+@login_required(login_url='/accounts/login', redirect_field_name='')
 def video_summary(request, video_id):
     video = get_object_or_404(Video, pk=video_id)
     return render(request, 'dashboard/video_summary.html')
