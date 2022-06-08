@@ -38,10 +38,10 @@ def upload(request, user_id=None):
             obj.save()
             summary.split_to_frames()
             # create thumbnail and add it to db
-            # thumnail_frame = summary.get_video_duration()[1] // 2
-            thumnailFrame = summary.get_video_duration()[1] // 2
+            # thumnailFrame = summary.get_video_duration()[1] // 2
+            thumnailFrame = "1"
             thumbData = open(os.path.join(path, "frame"
-                                           + thumnailFrame + ".jpg"), 'rb')
+                                          + thumnailFrame + ".jpg"), 'rb')
             thumbFile = File(thumbData)
             obj.thumbnail.save('thumbnail.jpg', thumbFile)
             form = VideoForm()

@@ -33,6 +33,7 @@ class SmrtSummary:
     def get_video_duration(self) -> None:
         fps = self.cap.get(cv.CAP_PROP_FPS)
         frame_count = self.cap.get(cv.CAP_PROP_FRAME_COUNT)
+        print(frame_count)
         duration = time.strftime('%H:%M:%S', time.gmtime(frame_count / fps))
         return duration, frame_count
 
