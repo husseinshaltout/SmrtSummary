@@ -39,13 +39,21 @@
             >
               Get Summary
             </button>
-            <a
-            class="text-sm rounded-full border-0 font-semibold py-2 px-4 bg-primary hover:bg-secondary-200 active:bg-secondary-200 focus:outline-none focus:ring focus:ring-gray-300 text-white"
-          >
-           View last summary
-          </a>
-          </div>
+          
         </form>
+
+        {% if video.video_summary %}
+          <form method="POST" action="{% url 'video_summary' video.id %}">
+            {% csrf_token %}
+            <button
+              class="text-sm rounded-full border-0 font-semibold py-2 px-4 bg-primary hover:bg-secondary-200 active:bg-secondary-200 focus:outline-none focus:ring focus:ring-gray-300 text-white"
+            >
+            View last summary
+            </button>
+          </form>
+        {% endif %}
+      </div>
+
       </div>
     </div>
   </div>
