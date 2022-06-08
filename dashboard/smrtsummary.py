@@ -57,7 +57,7 @@ class SmrtSummary:
                                              "frame{0}.jpg").format(i))
                 numpy_horizontal = np.hstack((numpy_horizontal, img))
         # Create summary image
-        cv.imwrite(os.path.join(self.framesLocation, "summary.png"),
+        cv.imwrite(os.path.join(self.croppedFramesLocation, "summary.png"),
                    numpy_horizontal)
 
     def create_summary(self, scanlineX: int) -> None:

@@ -12,7 +12,7 @@
         <canvas id="scanline_canvas" width="720" height="480"></canvas>
         <img
           id="first_frame_image"
-          src="{% static 'images/frame193.jpg' %}"
+          src="{{ video.thumbnail.url }}"
           style="display: none"
         />
         <!-- slider -->
@@ -33,12 +33,17 @@
           <!-- end slider -->
 
           {% csrf_token %}
-          <div class="flex items-center justify-center mt-2">
-            <button
+          <div class="flex items-center justify-around mt-2">
+            <button 
               class="text-sm rounded-full border-0 font-semibold py-2 px-4 bg-primary hover:bg-secondary-200 active:bg-secondary-200 focus:outline-none focus:ring focus:ring-gray-300 text-white"
             >
               Get Summary
             </button>
+            <a
+            class="text-sm rounded-full border-0 font-semibold py-2 px-4 bg-primary hover:bg-secondary-200 active:bg-secondary-200 focus:outline-none focus:ring focus:ring-gray-300 text-white"
+          >
+           View last summary
+          </a>
           </div>
         </form>
       </div>

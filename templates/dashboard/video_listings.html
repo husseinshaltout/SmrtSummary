@@ -15,7 +15,7 @@
         <a href="{% url 'scanline' video.id %}">
           <img
             class="hover:object-scale-down h-32 sm:h-48 w-full object-cover"
-            src="{% static 'images/frame193.jpg' %}"
+            src="{{ video.thumbnail.url }}"
             alt=""
           />
           <div class="m-4">

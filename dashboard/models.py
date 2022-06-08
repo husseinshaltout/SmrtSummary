@@ -10,6 +10,8 @@ class Video(models.Model):
     videofile = models.FileField(upload_to='videos/%Y/%m/%d/',
                                  verbose_name="",
                                  validators=[file_size])
+    thumbnail = models.ImageField(upload_to='photos/thumbnails/%Y/%m/%d/',
+                                  blank=True)
     video_summary = models.ImageField(upload_to='photos/%Y/%m/%d/', blank=True)
     video_duration = models.CharField(max_length=200, blank=True)
     upload_date = models.DateTimeField(default=datetime.now, blank=True)
