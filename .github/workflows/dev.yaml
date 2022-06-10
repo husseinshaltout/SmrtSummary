@@ -45,6 +45,4 @@ jobs:
       - name: Run Tests
         run: |
           python manage.py collectstatic --no-input
-          python manage.py test
-      - name: Check Syntax #We are just testing the syntax in names app; pycodestyle uses pep8 conventions of max line length of 79 characters while Django recommends 119 characters
-        run: pycodestyle --statistics names
+          coverage run manage.py test && coverage report --fail-under=75 && coverage xml
