@@ -13,8 +13,7 @@ db.sqlite3-journal
 /media
 venv
 /static
-SmrtSummary/static
-.vscode/
+.vscode
 test.mp4
 test2.mp4
 jsconfig.json
