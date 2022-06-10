@@ -19,11 +19,11 @@ jobs:
         image: postgres:10.8
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: github_actions
+          POSTGRES_PASSWORD: toor
+          POSTGRES_DB: smrtsummarydb
 
         ports:
-          - 5433:5432
+          - 5432:5432
 
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5 
  
@@ -39,19 +39,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Run migrations
-        env: 
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
-          DB_ENGINE: ${{secrets.DB_ENGINE}}
         run: |
           python manage.py makemigrations --noinput
           python manage.py migrate --noinput
       - name: Run Tests
         run: |
-          python manage.py test
-      - name: Check Syntax #We are just testing the syntax in names app; pycodestyle uses pep8 conventions of max line length of 79 characters while Django recommends 119 characters
-        run: pycodestyle --statistics names
+          python manage.py collectstatic --no-input
+          coverage run manage.py test && coverage report -i --fail-under=75
