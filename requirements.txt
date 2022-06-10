@@ -4,6 +4,7 @@ Django==4.0.4
 django-appconf==1.0.5
 numpy==1.22.4
 opencv-python==4.5.5.64
+pyffmpeg==2.3
 Pillow==9.1.1
 psycopg2==2.9.3
 psycopg2-binary==2.9.3
