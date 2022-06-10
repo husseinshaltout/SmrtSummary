@@ -1,0 +1,1 @@
+web: gunicorn SmrtSummary.wsgi --log-file -

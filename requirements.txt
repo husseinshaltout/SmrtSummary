@@ -1,0 +1,11 @@
+whitenoise==6.2.0
+dj-database-url==0.5.0
+Django==4.0.4
+django-appconf==1.0.5
+numpy==1.22.4
+opencv-python-headless
+pyffmpeg==2.3
+Pillow==9.1.1
+psycopg2==2.9.3
+psycopg2-binary==2.9.3
+gunicorn==20.1.0

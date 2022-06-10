@@ -1,23 +1,14 @@
-const resizeCanvasContainer = () => {
-  const canvasContainer = document.getElementById('canvas__container');
-  const img = document.getElementById('video_summary_image');
-  const { width } = img;
-  const { height } = img;
-  canvasContainer.style.width = `${width}px`;
-  canvasContainer.style.height = `${height}px`;
-};
-
 const drawImageScaled = () => {
-  const canvas = document.getElementById('myCanvas');
+  const canvas = document.getElementById('scanline_canvas');
   const ctx = canvas.getContext('2d');
-  const img = document.getElementById('video_summary_image');
+  const img = document.getElementById('first_frame_image');
   const canvasCtx = ctx.canvas;
   const hRatio = canvasCtx.width / img.width;
   const vRatio = canvasCtx.height / img.height;
   const ratio = Math.min(hRatio, vRatio);
   const centerShiftOfX = (canvasCtx.width - img.width * ratio) / 2;
   const centerShiftOfY = (canvasCtx.height - img.height * ratio) / 2;
-  ctx.clearRect(0, 0, canvasCtx.width, canvasCtx.height);
+  // ctx.clearRect(0, 0, canvasCtx.width, canvasCtx.height);
   ctx.drawImage(
     img,
     0,
@@ -31,7 +22,7 @@ const drawImageScaled = () => {
   );
 };
 const summaryDrawImage = () => {
-  const canvas = document.getElementById('myCanvas');
+  const canvas = document.getElementById('video_summary_canvas');
   const ctx = canvas.getContext('2d');
   const canvasContainer = document.getElementById('canvas__container');
   const imageObj = document.getElementById('video_summary_image');
@@ -41,20 +32,18 @@ const summaryDrawImage = () => {
   canvasContainer.style.height = `${height}px`;
   canvas.style.width = '100%';
   canvas.style.height = '100%';
-  // ...then set the internal size to match
   canvas.width = canvas.offsetWidth;
   canvas.height = canvas.offsetHeight;
-
-  // ctx.canvas.width = `${width}`;
-  // ctx.canvas.height = 480;
-  ctx.clearRect(0, 0, ctx.width, ctx.height);
+  // ctx.clearRect(0, 0, ctx.width, ctx.height);
   ctx.drawImage(imageObj, 0, 0, `${width}`, `${height}`);
 };
 
 window.onload = () => {
-  // resizeCanvasContainer();
-  // drawImageScaled();
-  summaryDrawImage();
+  try {
+    drawImageScaled();
+  } catch (error) {
+    summaryDrawImage();
+  }
 };
 
 const sec2time = (timeInSeconds) => {
@@ -74,32 +63,41 @@ const sec2time = (timeInSeconds) => {
       pad(milliseconds, 3)}`
   );
 };
-const timestampHandler = () => {
-  const sliderValue = document.getElementById('default-range').value;
-  const timestamp = sliderValue / 30; // positin of slected frame divided by (video frames/seconds)
+const timestampHandler = (mouseXPosition) => {
+  // positin of slected frame divided by (video frames/seconds)
+  const timestamp = mouseXPosition / 30;
   const timestampSpan = document.getElementById('timestamp');
   timestampSpan.textContent = sec2time(timestamp);
 };
-const drawScanline = () => {
-  const canvas = document.getElementById('myCanvas');
+const drawRedLine = (drawInCanvas, canvas, xValue) => {
   const ctx = canvas.getContext('2d');
-  const width = canvas.offsetWidth;
-  document.getElementById('default-range').max = width;
-  const sliderValue = document.getElementById('default-range').value;
   ctx.strokeStyle = '#FF0000';
-  ctx.lineWidth = 20;
+  ctx.lineWidth = 5;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  // drawImageScaled();
-  summaryDrawImage();
+  drawInCanvas();
   ctx.beginPath();
-  ctx.moveTo(sliderValue, 0);
-  ctx.lineTo(sliderValue, 480);
+  ctx.moveTo(xValue, 0);
+  ctx.lineTo(xValue, canvas.height);
   ctx.stroke();
-};
-const videoSummarySliderHandler = () => {
-  // resizeCanvasContainer();
-  drawScanline();
-  timestampHandler();
+  ctx.closePath();
 };
 
+function getMousePosition(canvas, event) {
+  const rect = canvas.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  return x;
+}
 
+const scanlineSliderHandler = () => {
+  const canvas = document.getElementById('scanline_canvas');
+  const width = canvas.offsetWidth;
+  document.getElementById('canvas_range').max = width;
+  const sliderValue = document.getElementById('canvas_range').value;
+  drawRedLine(drawImageScaled, canvas, sliderValue);
+};
+
+const videoSummaryCanvas = document.getElementById('video_summary_canvas');
+videoSummaryCanvas.addEventListener('mousedown', (e) => {
+  timestampHandler(getMousePosition(videoSummaryCanvas, e));
+  drawRedLine(summaryDrawImage, videoSummaryCanvas, getMousePosition(videoSummaryCanvas, e));
+});
