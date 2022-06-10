@@ -1,3 +1,5 @@
 from django.test import TestCase
 
-# Create your tests here.
+class BaseTest(TestCase):
+    def setUp(self) -> None:
+        return super().setUp()
