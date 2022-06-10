@@ -30,7 +30,7 @@ const drawImageScaled = () => {
     img.height * ratio,
   );
 };
-const summaryDrawImage = () =>{
+const summaryDrawImage = () => {
   const canvas = document.getElementById('myCanvas');
   const ctx = canvas.getContext('2d');
   const canvasContainer = document.getElementById('canvas__container');
@@ -101,3 +101,5 @@ const videoSummarySliderHandler = () => {
   drawScanline();
   timestampHandler();
 };
+
+

@@ -28,20 +28,19 @@ def upload(request, user_id=None):
             obj = form.save(commit=False)
             obj.uploaded_by = request.user
             obj.save()
-            path = settings.MEDIA_ROOT + "/frames/" + str(obj.uploaded_by.id)
+            # path = f'{settings.MEDIA_ROOT}"/frames/"{str(obj.uploaded_by.id)}'
+            path = f'{settings.MEDIA_ROOT}/frames/{str(obj.uploaded_by.id)}/{os.path.basename(obj.videofile.name)}'
             isExist = os.path.exists(path)
             if not isExist:
                 os.makedirs(path)
-            summary = SmrtSummary(str(obj.videofile.path), settings.MEDIA_ROOT
-                                  + "/frames/" + str(obj.uploaded_by.id))
+            summary = SmrtSummary(str(obj.videofile.path), path)
             obj.video_duration = summary.get_video_duration()[0]
             obj.save()
             summary.split_to_frames()
             # create thumbnail and add it to db
             # thumnailFrame = summary.get_video_duration()[1] // 2
             thumnailFrame = "1"
-            thumbData = open(os.path.join(path, "frame"
-                                          + thumnailFrame + ".jpg"), 'rb')
+            thumbData = open(os.path.join(path, f'frame{thumnailFrame}.jpg'), 'rb')
             thumbFile = File(thumbData)
             obj.thumbnail.save('thumbnail.jpg', thumbFile)
             form = VideoForm()
@@ -57,10 +56,15 @@ def scanline(request, video_id):
     else:
         if request.method == 'POST':
             scanlineValue = request.POST['scanline_slider']
+            # summary = SmrtSummary(str(video.videofile.path),
+            #                       f'{settings.MEDIA_ROOT}/frames/{str(video.uploaded_by.id)}')
             summary = SmrtSummary(str(video.videofile.path),
-                                  settings.MEDIA_ROOT + "/frames/"
-                                  + str(video.uploaded_by.id))
-            path = settings.MEDIA_ROOT + "/frames/" + str(video.uploaded_by.id) + "/cropped"
+                                  f'{settings.MEDIA_ROOT}/frames/{str(video.uploaded_by.id)}/{os.path.basename(video.videofile.name)}')
+
+            # f'{settings.MEDIA_ROOT}/frames/{str(video.uploaded_by.id)}/{os.path.basename(video.videofile.name)}'
+            
+            # path = f'{settings.MEDIA_ROOT}/frames/{str(video.uploaded_by.id)}/cropped'
+            path = f'{settings.MEDIA_ROOT}/frames/{str(video.uploaded_by.id)}/{os.path.basename(video.videofile.name)}/cropped'
             isExist = os.path.exists(path)
             if not isExist:
                 os.makedirs(path)
