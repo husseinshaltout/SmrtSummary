@@ -1,10 +1,10 @@
-name: Main Workflow - Test and Deploy
+name: Master Workflow - Test and Deploy
  
 on:
   pull_request:
-    branches: [main]
+    branches: [master]
   push:
-    branches: [main]
+    branches: [master]
  
 jobs:
   health-checkup-job: #Check the healthy by running tests
