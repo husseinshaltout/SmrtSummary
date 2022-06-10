@@ -1,1 +1,1 @@
-web: gunicorn smrtsummary.wsgi --log-file -
+web: gunicorn SmrtSummary.wsgi --log-file -
