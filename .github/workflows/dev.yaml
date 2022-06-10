@@ -45,4 +45,4 @@ jobs:
       - name: Run Tests
         run: |
           python manage.py collectstatic --no-input
-          coverage run manage.py test && coverage report -i --fail-under=75 && coverage xml
+          coverage run manage.py test && coverage report -i --fail-under=75
