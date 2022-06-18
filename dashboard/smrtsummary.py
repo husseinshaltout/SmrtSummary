@@ -27,7 +27,7 @@ class SmrtSummary:
             print("Splitting Frame #%s" % str(i))
             i += 1
         self.cap.release()
-        cv.destroyAllWindows()
+        # cv.destroyAllWindows()
 
     def get_video_duration(self) -> None:
         fps = self.cap.get(cv.CAP_PROP_FPS)
