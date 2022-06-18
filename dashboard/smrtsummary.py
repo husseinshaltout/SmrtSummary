@@ -52,11 +52,10 @@ class SmrtSummary:
             else:
                 img = cv.imread(os.path.join(self.croppedFramesLocation, "frame{0}.jpg").format(i))
                 numpy_horizontal = np.hstack((numpy_horizontal, img))
-        print("Concatenating done!")
-        print(f"numpy_horizontal value {numpy_horizontal}")
         # Create summary image
         cv.imwrite(os.path.join(self.croppedFramesLocation, "summary.png"), numpy_horizontal)
 
     def create_summary(self, scanlineX: int) -> None:
         self.crop_at_scanline(scanlineX)
+        print(f"frames location: {self.framesFileList}")
         self.concatenate_cropped_frames()
