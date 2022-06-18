@@ -62,7 +62,10 @@ def scanline(request, video_id):
                 f"{settings.MEDIA_ROOT}/frames/{str(video.uploaded_by.id)}/{os.path.basename(video.videofile.name)}",
             )
 
-            path = f"{settings.MEDIA_ROOT}/frames/{str(video.uploaded_by.id)}/{os.path.basename(video.videofile.name)}/cropped"
+            path = (
+                f"{settings.MEDIA_ROOT}/frames/{str(video.uploaded_by.id)}"
+                f"/{os.path.basename(video.videofile.name)}/cropped"
+            )
             isExist(path)
             summary.create_summary(int(scanlineValue))
             # create video_summary and add it to db

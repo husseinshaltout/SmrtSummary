@@ -10,7 +10,7 @@ from django.contrib.auth import get_user_model
 class BaseTest(TestCase):
     def setUp(self) -> None:
         self.uploadURL = reverse("upload")
-        self.scanlineURL = reverse("scanline", kwargs={"video_id": 2})
+        # self.scanlineURL = reverse("scanline", kwargs={"video_id": 2})
         self.user = get_user_model().objects.create_user(
             username="test", password="12test12", email="test@example.com"
         )
@@ -18,7 +18,7 @@ class BaseTest(TestCase):
         self.client.login(username="test", password="12test12")
         self.videoFile = SimpleUploadedFile(
             "test.mp4",
-            open("C:/Users/Dell/Documents/GitHub/SmrtSummary/test.mp4", "rb").read(),
+            open("./dashboard/tests/test.mp4", "rb").read(),
             content_type="video/mp4",
         )
         self.uploader = User.objects.filter(username="test").first()
@@ -34,7 +34,8 @@ class UploadTest(BaseTest):
 
     def test_can_upload_file(self) -> None:
         response = self.client.post(self.uploadURL, {"videofile": self.videoFile}, follow=True)
-        self.assertRedirects(response, self.scanlineURL)
+        videoObj = Video.objects.filter(uploaded_by=self.uploader).first()
+        self.assertRedirects(response, reverse("scanline", kwargs={"video_id": videoObj.id}))
 
     def test_upload_page_uses_video_form(self) -> None:
         response = self.client.get(self.uploadURL)
