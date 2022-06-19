@@ -15,7 +15,7 @@ class SmrtSummary:
         self.framesLocation = framesLocation
         self.cap = cv.VideoCapture(self.videoLocation)
         self.croppedFramesLocation = "%s/cropped" % self.framesLocation
-        self.framesFileList = glob.glob("%s\\*.jpg" % self.framesLocation)
+        self.framesFileList = glob.glob("%s//*.jpg" % self.framesLocation)
 
     def split_to_frames(self) -> None:
         i = 0
@@ -27,7 +27,6 @@ class SmrtSummary:
             print("Splitting Frame #%s" % str(i))
             i += 1
         self.cap.release()
-        # cv.destroyAllWindows()
 
     def get_video_duration(self) -> None:
         fps = self.cap.get(cv.CAP_PROP_FPS)
@@ -41,7 +40,7 @@ class SmrtSummary:
             im = cv.imread(image, cv.IMREAD_COLOR)
             rows = im.shape[0]
             cropped = im[0:rows, scanlineX - 1 : scanlineX]
-            cv.imwrite(os.path.join(self.croppedFramesLocation, image.split("\\")[-1]), cropped)
+            cv.imwrite(os.path.join(self.croppedFramesLocation, image.split("/")[-1]), cropped)
         print("cropping done!")
 
     def concatenate_cropped_frames(self) -> None:
@@ -57,5 +56,4 @@ class SmrtSummary:
 
     def create_summary(self, scanlineX: int) -> None:
         self.crop_at_scanline(scanlineX)
-        print(f"frames location: {self.framesFileList}")
         self.concatenate_cropped_frames()
