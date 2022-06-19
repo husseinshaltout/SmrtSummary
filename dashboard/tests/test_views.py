@@ -10,7 +10,6 @@ from django.contrib.auth import get_user_model
 class BaseTest(TestCase):
     def setUp(self) -> None:
         self.uploadURL = reverse("upload")
-        # self.scanlineURL = reverse("scanline", kwargs={"video_id": 2})
         self.user = get_user_model().objects.create_user(
             username="test", password="12test12", email="test@example.com"
         )
