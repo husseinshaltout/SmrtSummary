@@ -1,9 +1,10 @@
 import cv2 as cv
-import os
 import time
-import glob
+from PIL import Image
+from io import BytesIO
 import numpy as np
-
+from django.conf import settings
+import boto3
 
 # create directory with user id
 # split video into frames in user directory
@@ -14,8 +15,10 @@ class SmrtSummary:
         self.videoLocation = videoLocation
         self.framesLocation = framesLocation
         self.cap = cv.VideoCapture(self.videoLocation)
-        self.croppedFramesLocation = "%s/cropped" % self.framesLocation
-        self.framesFileList = glob.glob("%s//*.jpg" % self.framesLocation)
+        self.croppedFramesLocation = f"{self.framesLocation}/cropped"
+        self.s3 = boto3.resource("s3")
+        self.bucket = self.s3.Bucket(settings.AWS_STORAGE_BUCKET_NAME)
+        self.framesFileList = self.bucket.objects.filter(Prefix=self.framesLocation)
 
     def split_to_frames(self) -> None:
         i = 0
@@ -23,7 +26,8 @@ class SmrtSummary:
             ret, frame = self.cap.read()
             if not ret:
                 break
-            cv.imwrite(os.path.join(self.framesLocation, "frame" + str(i) + ".jpg"), frame)
+            frameToString = cv.imencode(".jpg", frame)[1].tobytes()
+            self.bucket.put_object(Key=f"{self.framesLocation}/frame{str(i)}.jpg", Body=frameToString)
             print("Splitting Frame #%s" % str(i))
             i += 1
         self.cap.release()
@@ -37,22 +41,31 @@ class SmrtSummary:
     # Crop all frames at x-axis scanlineX
     def crop_at_scanline(self, scanlineX: int) -> None:
         for image in self.framesFileList:
-            im = cv.imread(image, cv.IMREAD_COLOR)
+            imageAsBytes = image.get()["Body"].read()
+            im = cv.imdecode(np.asarray(bytearray(imageAsBytes)), cv.IMREAD_COLOR)
             rows = im.shape[0]
             cropped = im[0:rows, scanlineX - 1 : scanlineX]
-            cv.imwrite(os.path.join(self.croppedFramesLocation, image.split("/")[-1]), cropped)
+            croppedFrameToString = cv.imencode(".jpg", cropped)[1].tobytes()
+            self.bucket.put_object(
+                Key=f'{self.croppedFramesLocation}/{image.key.split("/")[-1]}', Body=croppedFrameToString
+            )
         print("cropping done!")
 
     def concatenate_cropped_frames(self) -> None:
         # Concatenate all cropped images horizontaly
-        for i in range(len(self.framesFileList)):
+        for i, image in enumerate(self.bucket.objects.filter(Prefix=self.croppedFramesLocation)):
             if i == 0:
-                numpy_horizontal = cv.imread(os.path.join(self.croppedFramesLocation, "frame{0}.jpg").format(i))
+                imageAsBytes = image.get()["Body"].read()
+                numpy_horizontal = cv.imdecode(np.asarray(bytearray(imageAsBytes)), cv.IMREAD_COLOR)
             else:
-                img = cv.imread(os.path.join(self.croppedFramesLocation, "frame{0}.jpg").format(i))
+                imageAsBytes = image.get()["Body"].read()
+                img = cv.imdecode(np.asarray(bytearray(imageAsBytes)), cv.IMREAD_COLOR)
                 numpy_horizontal = np.hstack((numpy_horizontal, img))
         # Create summary image
-        cv.imwrite(os.path.join(self.croppedFramesLocation, "summary.png"), numpy_horizontal)
+        file_stream = BytesIO()
+        im = Image.fromarray(numpy_horizontal)
+        im.save(file_stream, format="jpeg")
+        self.bucket.put_object(Key=f"{self.croppedFramesLocation}/summary.png", Body=file_stream.getvalue())
 
     def create_summary(self, scanlineX: int) -> None:
         self.crop_at_scanline(scanlineX)

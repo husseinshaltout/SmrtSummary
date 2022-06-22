@@ -3,15 +3,9 @@ from django.http import HttpResponseNotFound
 from .forms import VideoForm
 from .models import Video
 from .smrtsummary import SmrtSummary
-from django.conf import settings
 import os
 from django.contrib.auth.decorators import login_required
-from django.core.files import File
-
-
-def isExist(path) -> None:
-    if not os.path.exists(path):
-        os.makedirs(path)
+from django.core.files.base import ContentFile
 
 
 @login_required(login_url="/accounts/login", redirect_field_name="")
@@ -31,18 +25,17 @@ def upload(request, user_id=None):
             obj = form.save(commit=False)
             obj.uploaded_by = request.user
             obj.save()
-            path = f"{settings.MEDIA_ROOT}/frames/{str(obj.uploaded_by.id)}/{os.path.basename(obj.videofile.name)}"
-            isExist(path)
-            summary = SmrtSummary(str(obj.videofile.path), path)
+            path = f"media/frames/{str(obj.uploaded_by.id)}/{os.path.basename(obj.videofile.name)}"
+            summary = SmrtSummary(str(obj.videofile.url), path)
             obj.video_duration = summary.get_video_duration()[0]
             obj.save()
             summary.split_to_frames()
             # create thumbnail and add it to db
             # thumnailFrame = summary.get_video_duration()[1] // 2
             thumnailFrame = "1"
-            thumbData = open(os.path.join(path, f"frame{thumnailFrame}.jpg"), "rb")
-            thumbFile = File(thumbData)
-            obj.thumbnail.save("thumbnail.jpg", thumbFile)
+            thumbData = summary.bucket.Object(f"{path}/frame{thumnailFrame}.jpg").get()["Body"].read()
+            thumbnailContentFile = ContentFile(thumbData, name="thumbnail.jpg")
+            obj.thumbnail.save("thumbnail.jpg", thumbnailContentFile)
             form = VideoForm()
             return redirect("scanline", obj.id)
     return render(request, "dashboard/upload.html", {"form": form})
@@ -56,21 +49,12 @@ def scanline(request, video_id):
     else:
         if request.method == "POST":
             scanlineValue = request.POST["scanline_slider"]
-
-            summary = SmrtSummary(
-                str(video.videofile.path),
-                f"{settings.MEDIA_ROOT}/frames/{str(video.uploaded_by.id)}/{os.path.basename(video.videofile.name)}",
-            )
-
-            path = (
-                f"{settings.MEDIA_ROOT}/frames/{str(video.uploaded_by.id)}"
-                f"/{os.path.basename(video.videofile.name)}/cropped"
-            )
-            isExist(path)
+            framesLocation = f"media/frames/{str(video.uploaded_by.id)}/{os.path.basename(video.videofile.name)}"
+            summary = SmrtSummary(str(video.videofile.url), framesLocation)
             summary.create_summary(int(scanlineValue))
             # create video_summary and add it to db
-            smrtsummaryData = open(os.path.join(path, "summary.png"), "rb")
-            smrtsummaryFile = File(smrtsummaryData)
+            smrtsummaryData = summary.bucket.Object(f"{framesLocation}/cropped/summary.png").get()["Body"].read()
+            smrtsummaryFile = ContentFile(smrtsummaryData, name="smrtsummary.jpg")
             video.video_summary.save("smrtsummary.jpg", smrtsummaryFile)
             return redirect("video_summary", video_id)
         else:
