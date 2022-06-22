@@ -10,11 +10,15 @@
         class="mx-auto rounded-lg bg-gray-600"
       >
         <canvas id="scanline_canvas" width="720" height="480"></canvas>
-        <img
-          id="first_frame_image"
-          src="{{ video.thumbnail.url }}"
-          style="display: none"
-        />
+        {% if video.thumbnail %}
+          <img
+            id="first_frame_image"
+            src="{{ video.thumbnail.url }}"
+            style="display: none"
+          />
+        {% else %}
+        <p>Image not available</p>
+        {% endif %}
         <!-- slider -->
         <form method="POST" action="{% url 'scanline' video.id %}">
           <div class="">
