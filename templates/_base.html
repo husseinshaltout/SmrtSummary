@@ -8,6 +8,16 @@
     <link rel="stylesheet" href="{% static 'css/output.css' %}" />
     <script src="{% static 'js/main.js' %}" defer></script>
     <title>SmrtSummary{% block title %}{% endblock %}</title>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-86DW9JMNP9"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-86DW9JMNP9');
+    </script>
+    <script src="https://cdn.websitepolicies.io/lib/cookieconsent/cookieconsent.min.js" defer></script><script>window.addEventListener("load",function(){window.wpcc.init({"corners":"small","colors":{"popup":{"background":"#f6f6f6","text":"#212529","border":"#555555"},"button":{"background":"#0a3ae0","text":"#ffffff"}},"border":"thin","padding":"none","margin":"small","transparency":"15","fontsize":"small","content":{"href":"https://smrtsummary.herokuapp.com/privacy"}})});</script>
   </head>
   <body class="text-gray-600">
     <!-- Nav Bar -->
