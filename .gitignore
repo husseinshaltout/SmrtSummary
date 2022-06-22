@@ -16,6 +16,7 @@ venv
 .vscode
 test1.mp4
 test2.mp4
+s3_upload_download_test.py
 jsconfig.json
 tailwind.config.js
 # If your build process includes running collectstatic, then you probably don't need or want to include staticfiles/
