@@ -3,7 +3,6 @@ from django.http import HttpResponseNotFound
 from .forms import VideoForm
 from .models import Video
 from .smrtsummary import SmrtSummary
-import os
 from django.contrib.auth.decorators import login_required
 from django.core.files.base import ContentFile
 
@@ -25,15 +24,21 @@ def upload(request, user_id=None):
             obj = form.save(commit=False)
             obj.uploaded_by = request.user
             obj.save()
-            path = f"media/frames/{str(obj.uploaded_by.id)}/{os.path.basename(obj.videofile.name)}"
-            summary = SmrtSummary(str(obj.videofile.url), path)
+            summary = SmrtSummary(str(obj.videofile.url))
             obj.video_duration = summary.get_video_duration()[0]
             obj.save()
-            summary.split_to_frames()
+            splittedFramesList = summary.split_to_frames()
+            framesAsNpz = summary.store_frames_npz(splittedFramesList)
+            video_framesContentFile = ContentFile(
+                framesAsNpz, name=f"{str(obj.uploaded_by)}_{str(obj.videofile.name).split('/')[-1]}.npz"
+            )
+            obj.video_frames = video_framesContentFile
+            print("Saving npz file")
+            obj.save()
             # create thumbnail and add it to db
-            # thumnailFrame = summary.get_video_duration()[1] // 2
-            thumnailFrame = "1"
-            thumbData = summary.bucket.Object(f"{path}/frame{thumnailFrame}.jpg").get()["Body"].read()
+            # thumbnailFrame = summary.get_video_duration()[1] // 2
+            thumbnailFrame = 1
+            thumbData = summary.create_thumbnail(splittedFramesList, thumbnailFrame)
             thumbnailContentFile = ContentFile(thumbData, name="thumbnail.jpg")
             obj.thumbnail.save("thumbnail.jpg", thumbnailContentFile)
             form = VideoForm()
@@ -49,13 +54,16 @@ def scanline(request, video_id):
     else:
         if request.method == "POST":
             scanlineValue = request.POST["scanline_slider"]
-            framesLocation = f"media/frames/{str(video.uploaded_by.id)}/{os.path.basename(video.videofile.name)}"
-            summary = SmrtSummary(str(video.videofile.url), framesLocation)
-            summary.create_summary(int(scanlineValue))
+            summary = SmrtSummary(str(video.videofile.url))
             # create video_summary and add it to db
-            smrtsummaryData = summary.bucket.Object(f"{framesLocation}/cropped/summary.png").get()["Body"].read()
-            smrtsummaryFile = ContentFile(smrtsummaryData, name="smrtsummary.jpg")
-            video.video_summary.save("smrtsummary.jpg", smrtsummaryFile)
+            smrtsummaryData = summary.create_summary(int(scanlineValue), f"media/{str(video.video_frames.name)}")
+            smrtsummaryFile = ContentFile(
+                smrtsummaryData,
+                name=f"{str(video.uploaded_by.id)}/{str(video.videofile.name).split('/')[-1]}_smrtsummary.jpg",
+            )
+            video.video_summary.save(
+                f"{str(video.uploaded_by)}_{str(video.videofile.name).split('/')[-1]}_smrtsummary.jpg", smrtsummaryFile
+            )
             return redirect("video_summary", video_id)
         else:
             context = {"video": video}
