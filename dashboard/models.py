@@ -13,6 +13,7 @@ class Video(models.Model):
     thumbnail = models.ImageField(upload_to="photos/thumbnails/%Y/%m/%d/", blank=True)
     video_summary = models.ImageField(upload_to="photos/%Y/%m/%d/", blank=True)
     video_duration = models.CharField(max_length=200, blank=True)
+    video_frames = models.FileField(upload_to="npz/%Y/%m/%d/", blank=True)
     upload_date = models.DateTimeField(default=datetime.now, blank=True)
 
     def __str__(self):
