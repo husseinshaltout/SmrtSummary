@@ -1,4 +1,3 @@
-from tkinter import N
 import cv2 as cv
 import time
 from PIL import Image
