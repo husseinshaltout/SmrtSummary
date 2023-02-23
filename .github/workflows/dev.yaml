@@ -8,7 +8,7 @@ on:
  
 jobs:
   health-checkup-job: #Check the healthy by running tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       max-parallel: 4
       matrix:
