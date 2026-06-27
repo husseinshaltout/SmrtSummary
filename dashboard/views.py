@@ -1,80 +1,109 @@
-from django.shortcuts import get_object_or_404, render, redirect
-from django.http import HttpResponseNotFound
-from .forms import VideoForm
-from .models import Video
-from .smrtsummary import SmrtSummary
+import logging
+
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.core.files.base import ContentFile
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_GET
+
+from .forms import VideoForm
+from .models import Video, VideoStatus
+from .services import VideoProcessingService
+from .tasks import enqueue_video_processing
+
+logger = logging.getLogger(__name__)
+
+
+def _require_video_owner(request, video: Video) -> None:
+    if video.uploaded_by != request.user:
+        raise PermissionDenied("You do not have access to this video.")
 
 
 @login_required(login_url="/accounts/login", redirect_field_name="")
 def home(request):
-    videos = Video.objects.order_by("-upload_date").filter(uploaded_by=request.user)
-    context = {
-        "uploaded_videos": videos,
-    }
-    return render(request, "dashboard/video_listings.html", context)
+    videos = Video.objects.filter(uploaded_by=request.user)
+    return render(request, "dashboard/video_listings.html", {"uploaded_videos": videos})
 
 
 @login_required(login_url="/accounts/login", redirect_field_name="")
-def upload(request, user_id=None):
+def upload(request):
     form = VideoForm(request.POST or None, request.FILES or None)
-    if request.method == "POST":
-        if form.is_valid():
-            obj = form.save(commit=False)
-            obj.uploaded_by = request.user
-            obj.save()
-            summary = SmrtSummary(str(obj.videofile.url))
-            obj.video_duration = summary.get_video_duration()[0]
-            obj.save()
-            splittedFramesList = summary.split_to_frames()
-            framesAsNpz = summary.store_frames_npz(splittedFramesList)
-            video_framesContentFile = ContentFile(
-                framesAsNpz, name=f"{str(obj.uploaded_by)}_{str(obj.videofile.name).split('/')[-1]}.npz"
-            )
-            obj.video_frames = video_framesContentFile
-            print("Saving npz file")
-            obj.save()
-            # create thumbnail and add it to db
-            # thumbnailFrame = summary.get_video_duration()[1] // 2
-            thumbnailFrame = 1
-            thumbData = summary.create_thumbnail(splittedFramesList, thumbnailFrame)
-            thumbnailContentFile = ContentFile(thumbData, name="thumbnail.jpg")
-            obj.thumbnail.save("thumbnail.jpg", thumbnailContentFile)
-            form = VideoForm()
-            return redirect("scanline", obj.id)
+    if request.method == "POST" and form.is_valid():
+        video = form.save(commit=False)
+        video.uploaded_by = request.user
+        video.status = VideoStatus.PENDING
+        video.save()
+        try:
+            enqueue_video_processing(video.id)
+        except Exception:
+            logger.exception("failed to enqueue video %s", video.id)
+            messages.error(request, "Upload saved but processing could not start.")
+            return redirect("dashboard")
+        messages.success(request, "Video uploaded. Processing has started.")
+        return redirect("scanline", video.id)
     return render(request, "dashboard/upload.html", {"form": form})
 
 
 @login_required(login_url="/accounts/login", redirect_field_name="")
 def scanline(request, video_id):
     video = get_object_or_404(Video, pk=video_id)
-    if video.uploaded_by != request.user:
-        return HttpResponseNotFound("<h1>Not authenticated</h1>")
-    else:
-        if request.method == "POST":
-            scanlineValue = request.POST["scanline_slider"]
-            summary = SmrtSummary(str(video.videofile.url))
-            # create video_summary and add it to db
-            smrtsummaryData = summary.create_summary(int(scanlineValue), f"media/{str(video.video_frames.name)}")
-            smrtsummaryFile = ContentFile(
-                smrtsummaryData,
-                name=f"{str(video.uploaded_by.id)}/{str(video.videofile.name).split('/')[-1]}_smrtsummary.jpg",
-            )
-            video.video_summary.save(
-                f"{str(video.uploaded_by)}_{str(video.videofile.name).split('/')[-1]}_smrtsummary.jpg", smrtsummaryFile
-            )
+    _require_video_owner(request, video)
+    if request.method == "POST":
+        scanline_raw = request.POST.get("scanline_slider")
+        if scanline_raw is None:
+            messages.error(request, "Scanline position is required.")
+            return redirect("scanline", video_id)
+        try:
+            scanline_x = int(scanline_raw)
+            service = VideoProcessingService()
+            summary_bytes = service.create_scanline_summary(video, scanline_x)
+            summary_name = f"{video.uploaded_by}_{video.videofile.name.split('/')[-1]}_smrtsummary.jpg"
+            video.video_summary.save(summary_name, ContentFile(summary_bytes))
             return redirect("video_summary", video_id)
-        else:
-            context = {"video": video}
-            return render(request, "dashboard/scanline.html", context)
+        except (ValueError, PermissionError) as exc:
+            messages.error(request, str(exc))
+        except Exception:
+            logger.exception("summary generation failed for video %s", video_id)
+            messages.error(request, "Could not generate summary. Try again.")
+        return redirect("scanline", video_id)
+    return render(request, "dashboard/scanline.html", {"video": video})
 
 
 @login_required(login_url="/accounts/login", redirect_field_name="")
 def video_summary(request, video_id):
     video = get_object_or_404(Video, pk=video_id)
-    if video.uploaded_by != request.user:
-        return HttpResponseNotFound("<h1>Not authenticated</h1>")
-    else:
-        context = {"video_summary": video.video_summary}
-    return render(request, "dashboard/video_summary.html", context)
+    _require_video_owner(request, video)
+    if not video.video_summary:
+        messages.error(request, "No summary available yet.")
+        return redirect("scanline", video_id)
+    return render(
+        request,
+        "dashboard/video_summary.html",
+        {
+            "video": video,
+            "video_summary": video.video_summary,
+            "frame_count": video.frame_count,
+        },
+    )
+
+
+@require_GET
+def health(request):
+    return JsonResponse({"status": "ok"})
+
+
+@login_required(login_url="/accounts/login")
+def video_status(request, video_id):
+    video = get_object_or_404(Video, pk=video_id)
+    _require_video_owner(request, video)
+    return JsonResponse(
+        {
+            "id": video.id,
+            "status": video.status,
+            "processing_error": video.processing_error,
+            "frame_count": video.frame_count,
+            "frame_width": video.frame_width,
+        }
+    )

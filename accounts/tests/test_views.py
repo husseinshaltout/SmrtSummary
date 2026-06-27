@@ -105,8 +105,7 @@ class LoginTest(BaseTest):
                                                     'password': 'password'},
                                     format='text/html')
         messages = list(get_messages(response.wsgi_request))
-        self.assertEqual(len(messages), 3)
-        self.assertEqual(str(messages[2]), 'Invalid credentials')
+        self.assertEqual(str(messages[-1]), 'Username and password are required.')
         self.assertRedirects(response, '/accounts/login/')
 
 

@@ -1,65 +1,62 @@
 from django.shortcuts import redirect, render
 from django.contrib import messages
-from django.contrib.auth.models import User, auth
+from django.contrib.auth.models import User, auth as django_auth
 
 
-def register(request):
-    if request.method == 'POST':
-        # Get form values
-        first_name = request.POST['firstname']
-        last_name = request.POST['lastname']
-        username = request.POST['username']
-        email = request.POST['email']
-        password = request.POST['password']
-        password2 = request.POST['password2']
+def register_view(request):
+    if request.method == "POST":
+        first_name = request.POST.get("firstname", "").strip()
+        last_name = request.POST.get("lastname", "").strip()
+        username = request.POST.get("username", "").strip()
+        email = request.POST.get("email", "").strip()
+        password = request.POST.get("password", "")
+        password2 = request.POST.get("password2", "")
 
-        if password == password2:
-            # Check username
-            if User.objects.filter(username=username).exists():
-                messages.error(request, 'That username is taken')
-                return redirect('register')
-            else:
-                if User.objects.filter(email=email).exists():
-                    messages.error(request, 'That email is being used')
-                    return redirect('register')
-                else:
-                    user = User.objects.create_user(username=username,
-                                                    password=password,
-                                                    email=email,
-                                                    first_name=first_name,
-                                                    last_name=last_name)
-                    # Login after register
-                    auth.login(request, user)
-                    messages.success(request, 'You are now logged in')
-                    return redirect('index')
-        else:
-            messages.error(request, 'Passwords do not match')
-            return redirect('register')
-    else:
-        return render(request, 'accounts/register.html')
+        if not all([first_name, last_name, username, email, password, password2]):
+            messages.error(request, "All fields are required.")
+            return redirect("register")
+        if password != password2:
+            messages.error(request, "Passwords do not match")
+            return redirect("register")
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "That username is taken")
+            return redirect("register")
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "That email is being used")
+            return redirect("register")
+        user = User.objects.create_user(
+            username=username,
+            password=password,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+        )
+        django_auth.login(request, user)
+        messages.success(request, "You are now logged in")
+        return redirect("index")
+    return render(request, "accounts/register.html")
 
 
-def login(request):
-    if request.method == 'POST':
-        # Login User
-        username = request.POST['username']
-        password = request.POST['password']
-
-        user = auth.authenticate(username=username, password=password)
-
+def login_view(request):
+    if request.method == "POST":
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "")
+        if not username or not password:
+            messages.error(request, "Username and password are required.")
+            return redirect("login")
+        user = django_auth.authenticate(username=username, password=password)
         if user is not None:
-            auth.login(request, user)
-            messages.success(request, 'You are now logged in')
-            return redirect('dashboard')
-        else:
-            messages.error(request, 'Invalid credentials')
-            return redirect('login')
-    else:
-        return render(request, 'accounts/login.html')
+            django_auth.login(request, user)
+            messages.success(request, "You are now logged in")
+            return redirect("dashboard")
+        messages.error(request, "Invalid credentials")
+        return redirect("login")
+    return render(request, "accounts/login.html")
 
 
-def logout(request):
-    if request.method == 'POST':
-        auth.logout(request)
-        messages.success(request, 'Logout')
-        return redirect('index')
+def logout_view(request):
+    if request.method == "POST":
+        django_auth.logout(request)
+        messages.success(request, "Logout")
+        return redirect("index")
+    return redirect("index")
