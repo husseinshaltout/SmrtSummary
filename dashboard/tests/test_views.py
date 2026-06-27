@@ -1,73 +1,86 @@
-from django.test import TestCase
-from django.urls import reverse
-from django.core.files.uploadedfile import SimpleUploadedFile
-from dashboard.forms import VideoForm
-from dashboard.models import Video
-from django.contrib.auth.models import User
+import os
+import tempfile
+
+import cv2 as cv
+import numpy as np
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, override_settings
+from django.urls import reverse
+
+from dashboard.forms import VideoForm
+from dashboard.models import Video, VideoStatus
 
 
-class BaseTest(TestCase):
-    def setUp(self) -> None:
-        self.uploadURL = reverse("upload")
-        self.user = get_user_model().objects.create_user(
-            username="test", password="12test12", email="test@example.com"
-        )
-        self.user.save()
+def create_test_mp4() -> bytes:
+    temp = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
+    writer = cv.VideoWriter(temp.name, cv.VideoWriter_fourcc(*"mp4v"), 10, (160, 120))
+    for index in range(5):
+        frame = np.full((120, 160, 3), index * 40, dtype=np.uint8)
+        writer.write(frame)
+    writer.release()
+    with open(temp.name, "rb") as handle:
+        data = handle.read()
+    os.unlink(temp.name)
+    return data
+
+
+@override_settings(
+    DEFAULT_FILE_STORAGE="django.core.files.storage.FileSystemStorage",
+    MEDIA_ROOT=tempfile.mkdtemp(),
+)
+class DashboardViewTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(username="test", password="12test12", email="test@example.com")
         self.client.login(username="test", password="12test12")
-        self.videoFile = SimpleUploadedFile(
-            "test.mp4",
-            open("./dashboard/tests/test.mp4", "rb").read(),
-            content_type="video/mp4",
-        )
-        self.uploader = User.objects.filter(username="test").first()
-        self.scanlineValue = {"scanline_slider": "20"}
-        return super().setUp()
+        self.video_bytes = create_test_mp4()
+        self.video_file = SimpleUploadedFile("test.mp4", self.video_bytes, content_type="video/mp4")
 
-
-class UploadTest(BaseTest):
-    def test_can_view_page_correctly(self) -> None:
-        response = self.client.get(self.uploadURL)
+    def test_upload_page_renders(self):
+        response = self.client.get(reverse("upload"))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, "dashboard/upload.html")
-
-    def test_can_upload_file(self) -> None:
-        response = self.client.post(self.uploadURL, {"videofile": self.videoFile}, follow=True)
-        videoObj = Video.objects.filter(uploaded_by=self.uploader).first()
-        self.assertRedirects(response, reverse("scanline", kwargs={"video_id": videoObj.id}))
-
-    def test_upload_page_uses_video_form(self) -> None:
-        response = self.client.get(self.uploadURL)
         self.assertIsInstance(response.context["form"], VideoForm)
 
-    def test_user_can_select_scanline(self) -> None:
-        self.client.post(self.uploadURL, {"videofile": self.videoFile}, follow=True)
-        videoObj = Video.objects.filter(uploaded_by=self.uploader).first()
-        response = self.client.post(
-            reverse("scanline", kwargs={"video_id": videoObj.id}), self.scanlineValue, format="text/html"
-        )
-        self.assertRedirects(response, reverse("video_summary", kwargs={"video_id": videoObj.id}))
+    def test_upload_and_process_video(self):
+        response = self.client.post(reverse("upload"), {"videofile": self.video_file}, follow=True)
+        video = Video.objects.get(uploaded_by=self.user)
+        self.assertEqual(video.status, VideoStatus.READY)
+        self.assertGreater(video.frame_count, 0)
+        self.assertRedirects(response, reverse("scanline", kwargs={"video_id": video.id}))
 
-    def test_unauthorized_user_scanline_video_access(self) -> None:
-        videoObj = Video.objects.create(uploaded_by=self.uploader, title="testtest", videofile=self.videoFile)
-        self.client.logout()
-        self.user = get_user_model().objects.create_user(
-            username="test2", password="12test12", email="test2@example.com"
-        )
-        self.user.save()
-        self.client.login(username="test2", password="12test12")
-        response = self.client.get(reverse("scanline", kwargs={"video_id": videoObj.id}), format="text/html")
-        html = response.content.decode("utf8")
-        self.assertIn("<h1>Not authenticated</h1>", html)
+    def test_scanline_summary_flow(self):
+        upload_file = SimpleUploadedFile("test.mp4", self.video_bytes, content_type="video/mp4")
+        self.client.post(reverse("upload"), {"videofile": upload_file})
+        video = Video.objects.get(uploaded_by=self.user)
+        self.assertEqual(video.status, VideoStatus.READY, video.processing_error)
+        response = self.client.post(reverse("scanline", kwargs={"video_id": video.id}), {"scanline_slider": "10"})
+        video.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("video_summary", kwargs={"video_id": video.id}))
+        self.assertTrue(video.video_summary)
 
-    def test_unauthorized_user_video_summary_video_access(self) -> None:
-        videoObj = Video.objects.create(uploaded_by=self.uploader, title="testtest", videofile=self.videoFile)
-        self.client.logout()
-        self.user = get_user_model().objects.create_user(
-            username="test2", password="12test12", email="test2@example.com"
+    def test_unauthorized_scanline_returns_403(self):
+        video = Video.objects.create(
+            uploaded_by=self.user,
+            title="owned",
+            videofile=SimpleUploadedFile("x.mp4", self.video_bytes, content_type="video/mp4"),
+            status=VideoStatus.READY,
         )
-        self.user.save()
-        self.client.login(username="test2", password="12test12")
-        response = self.client.get(reverse("video_summary", kwargs={"video_id": videoObj.id}), format="text/html")
-        html = response.content.decode("utf8")
-        self.assertIn("<h1>Not authenticated</h1>", html)
+        other = get_user_model().objects.create_user(username="other", password="12test12", email="o@example.com")
+        self.client.logout()
+        self.client.login(username="other", password="12test12")
+        response = self.client.get(reverse("scanline", kwargs={"video_id": video.id}))
+        self.assertEqual(response.status_code, 403)
+
+    def test_video_status_json(self):
+        self.client.post(reverse("upload"), {"videofile": self.video_file})
+        video = Video.objects.get(uploaded_by=self.user)
+        response = self.client.get(reverse("video_status", kwargs={"video_id": video.id}))
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["status"], VideoStatus.READY)
+
+    def test_health_endpoint(self):
+        response = self.client.get(reverse("health"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], "ok")

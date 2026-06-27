@@ -1,15 +1,13 @@
+/** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    './templates/**/*.html',
-    '../templates/accounts/*.html',
-  ],
+  content: ['./templates/**/*.html'],
   theme: {
     extend: {
       colors: {
         primary: '#0a3ae0',
         secondary: {
-          100: '#212529',
-          200: '#0a40fa',
+          100: '#1e293b',
+          200: '#334155',
         },
       },
     },

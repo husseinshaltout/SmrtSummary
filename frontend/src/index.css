@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-gray-100 text-secondary-100;
+}
+
+.card {
+  @apply rounded-lg bg-white shadow-md overflow-hidden;
+}
+
+.badge {
+  @apply inline-block rounded-full px-3 py-1 text-xs font-semibold;
+}

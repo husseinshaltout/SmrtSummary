@@ -3,63 +3,74 @@
 <main class="px-16 py-6 bg-gray-100">
   <div class="m-2">
     <h4 class="text-3xl font-semibold text-secondary-100">Select scanline</h4>
+    {% if video.status != 'ready' %}
+      <p id="processing-banner" class="mt-4 text-secondary-100">Processing video ({{ video.status }})...</p>
+    {% endif %}
 
     <div class="mt-8">
       <div
         style="width: 720px; height: 480px"
         class="mx-auto rounded-lg bg-gray-600"
       >
-        <canvas id="scanline_canvas" width="720" height="480"></canvas>
+        <canvas
+          id="scanline_canvas"
+          width="720"
+          height="480"
+          data-frame-width="{{ video.frame_width }}"
+        ></canvas>
         {% if video.thumbnail %}
           <img
             id="first_frame_image"
             src="{{ video.thumbnail.url }}"
             style="display: none"
+            alt="Video thumbnail frame"
           />
         {% else %}
         <p>Image not available</p>
         {% endif %}
-        <!-- slider -->
         <form method="POST" action="{% url 'scanline' video.id %}">
+          <input type="hidden" id="scanline_frame_x" name="scanline_slider" value="0" />
           <div class="">
+            <label for="canvas_range" class="sr-only">Scanline position</label>
             <input
               id="canvas_range"
-              name="scanline_slider"
               type="range"
               value="0"
               min="0"
               max="100"
               step="1"
+              aria-label="Scanline position"
               class="w-full h-2 bg-gray-400 appearance-none cursor-pointer rounded-lg dark:bg-gray-700"
               oninput="scanlineSliderHandler()"
             />
           </div>
-          <!-- end slider -->
-
           {% csrf_token %}
           <div class="flex items-center justify-around mt-2">
-            <button 
-              class="text-sm rounded-full border-0 font-semibold py-2 px-4 bg-primary hover:bg-secondary-200 active:bg-secondary-200 focus:outline-none focus:ring focus:ring-gray-300 text-white"
+            <button
+              type="submit"
+              {% if video.status != 'ready' %}disabled{% endif %}
+              class="text-sm rounded-full border-0 font-semibold py-2 px-4 bg-primary hover:bg-secondary-200 active:bg-secondary-200 focus:outline-none focus:ring focus:ring-gray-300 text-white disabled:opacity-50"
             >
               Get Summary
             </button>
-          
+          </div>
         </form>
 
         {% if video.video_summary %}
-          <form method="POST" action="{% url 'video_summary' video.id %}">
-            {% csrf_token %}
-            <button
-              class="text-sm rounded-full border-0 font-semibold py-2 px-4 bg-primary hover:bg-secondary-200 active:bg-secondary-200 focus:outline-none focus:ring focus:ring-gray-300 text-white"
-            >
+          <a
+            href="{% url 'video_summary' video.id %}"
+            class="inline-block mt-2 text-sm rounded-full border-0 font-semibold py-2 px-4 bg-primary hover:bg-secondary-200 text-white"
+          >
             View last summary
-            </button>
-          </form>
+          </a>
         {% endif %}
-      </div>
-
       </div>
     </div>
   </div>
 </main>
+{% if video.status != 'ready' %}
+<script>
+  document.body.dataset.videoStatusUrl = "{% url 'video_status' video.id %}";
+</script>
+{% endif %}
 {% endblock content %}
